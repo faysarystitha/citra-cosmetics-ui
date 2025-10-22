@@ -1,11 +1,11 @@
 // ========= Seed Data =========
-export zconst initialBanners = [
+export const initialBanners = [
   'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&h=400&fit=crop&q=80',
   'https://images.unsplash.com/photo-1556912933-91f855057811?w=1200&h=400&fit=crop&q=80',
   'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=400&fit=crop&q=80'
 ];
 
-export zconst initialCategories = [
+export const initialCategories = [
   {
     id: 'makeup',
     name: 'Makeup',
@@ -482,7 +482,7 @@ export zconst initialCategories = [
   }
 ];
 
-export zconst initialProducts = {
+export const initialProducts = {
   skincare: [
     {
       id: 1,
