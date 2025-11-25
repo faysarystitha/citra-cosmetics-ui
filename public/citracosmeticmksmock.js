@@ -1,0 +1,3992 @@
+import React, { useState, useMemo } from 'react';
+import { ShoppingCart, Search, Menu, X, Star, Heart, ChevronRight, Plus, Minus, Trash2, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+
+// ========= Seed Data =========
+const initialBanners = [
+  'https://i.pinimg.com/1200x/06/35/a6/0635a6e351402d518681b30a74aa1dd9.jpg',
+  'https://i.pinimg.com/1200x/b2/13/e8/b213e892f2322d5b2132e138e65b490c.jpg',
+  'https://i.pinimg.com/1200x/b4/68/77/b468778d42e6c9f3013911e24da5ef05.jpg'
+];
+
+const initialCategories = [
+  {
+    id: 'makeup',
+    name: 'Makeup',
+    icon: '💄',
+    image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&h=400&fit=crop',
+    subCategories: [
+      { 
+        id: 'face', 
+        name: 'Face', 
+        subSubCategories: [
+          { id: 'cushion', name: 'Cushion' },
+          { id: 'foundation', name: 'Foundation' },
+          { id: 'bb-cc-cream', name: 'BB & CC Cream' },
+          { id: 'tinted-moisturizer', name: 'Tinted Moisturizer' },
+          { id: 'cake-foundation', name: 'Cake Foundation' },
+          { id: 'loose-powder', name: 'Loose Powder' },
+          { id: 'pressed-powder', name: 'Pressed Powder' },
+          { id: 'bronzer', name: 'Bronzer' },
+          { id: 'blush', name: 'Blush' },
+          { id: 'contour', name: 'Contour' },
+          { id: 'concealer', name: 'Concealer' },
+          { id: 'highlighter', name: 'Highlighter' },
+          { id: 'face-primer', name: 'Face Primer' },
+          { id: 'setting-spray', name: 'Setting Spray' },
+          { id: 'face-palette', name: 'Face Palette' }
+        ] 
+      },
+      { 
+        id: 'eyes', 
+        name: 'Eyes', 
+        subSubCategories: [
+          { id: 'eyebrows', name: 'Eyebrows' },
+          { id: 'eyeshadow', name: 'Eyeshadow' },
+          { id: 'eyeliner', name: 'Eyeliner' },
+          { id: 'false-eyelashes', name: 'False Eyelashes' },
+          { id: 'mascara', name: 'Mascara' },
+          { id: 'eye-tape', name: 'Eye Tape' }
+        ] 
+      },
+      { 
+        id: 'lips', 
+        name: 'Lips', 
+        subSubCategories: [
+          { id: 'lipstick', name: 'Lipstick' },
+          { id: 'lip-cream', name: 'Lip Cream' },
+          { id: 'lip-liner', name: 'Lip Liner' },
+          { id: 'lip-tint', name: 'Lip Tint' },
+          { id: 'lip-gloss', name: 'Lip Gloss' },
+          { id: 'lip-crayon', name: 'Lip Crayon' },
+          { id: 'lip-stain', name: 'Lip Stain' },
+          { id: 'lip-primer', name: 'Lip Primer' }
+        ] 
+      },
+      { id: 'makeup-palettes-set', name: 'Makeup Palettes & Set', subSubCategories: [] }
+    ]
+  },
+  {
+    id: 'skincare',
+    name: 'Skincare',
+    icon: '✨',
+    image: 'https://i.pinimg.com/736x/69/1e/00/691e00e88c54025e69cdd2158fb51107.jpg',
+    subCategories: [
+      { 
+        id: 'treatment', 
+        name: 'Treatment', 
+        subSubCategories: [
+          { id: 'acne-patch', name: 'Acne / Pimple Patch' },
+          { id: 'acne-treatment', name: 'Acne Treatment / Sealing Gel / Cream' },
+          { id: 'toner', name: 'Toner' },
+          { id: 'essence', name: 'Essence' },
+          { id: 'face-serum', name: 'Face Serum' },
+          { id: 'booster', name: 'Booster' },
+          { id: 'ampoule', name: 'Ampoule' },
+          { id: 'nose-pack', name: 'Nose Pack' }
+        ] 
+      },
+      { 
+        id: 'cleanser', 
+        name: 'Cleanser', 
+        subSubCategories: [
+          { id: 'face-wash', name: 'Face Wash' },
+          { id: 'makeup-remover', name: 'Makeup Remover' },
+          { id: 'cleansing-oil', name: 'Cleansing Oil' },
+          { id: 'cleansing-balm', name: 'Cleansing Balm' },
+          { id: 'cleansing-wipes', name: 'Cleansing Wipes' },
+          { id: 'cleansing-cream', name: 'Cleansing Cream' },
+          { id: 'cleansing-gel', name: 'Cleansing Gel' },
+          { id: 'cleansing-bar', name: 'Cleansing Bar' },
+          { id: 'cleansing-powder', name: 'Cleansing Powder' },
+          { id: 'scrub-exfoliator', name: 'Scrub & Exfoliator' },
+          { id: 'micellar-water', name: 'Micellar Water' },
+          { id: 'peeling', name: 'Peeling' }
+        ] 
+      },
+      { 
+        id: 'face-mask', 
+        name: 'Face Mask', 
+        subSubCategories: [
+          { id: 'sheet-mask', name: 'Sheet Mask' },
+          { id: 'clay-mask', name: 'Clay Mask' },
+          { id: 'wash-off-mask', name: 'Wash Off Mask' },
+          { id: 'peel-off-mask', name: 'Peel Off Mask' },
+          { id: 'sleeping-mask', name: 'Sleeping Mask' }
+        ] 
+      },
+      { 
+        id: 'sun-care', 
+        name: 'Sun Care', 
+        subSubCategories: [
+          { id: 'touch-ups-sunscreen', name: 'Touch-Ups Sunscreen' },
+          { id: 'sunscreen', name: 'Sunscreen' },
+          { id: 'after-sun-care', name: 'After Sun Care' }
+        ] 
+      },
+      { 
+        id: 'eye-care', 
+        name: 'Eye Care', 
+        subSubCategories: [
+          { id: 'eye-serum', name: 'Eye Serum' },
+          { id: 'eye-cream', name: 'Eye Cream' },
+          { id: 'eyelash-serum', name: 'Eyelash Serum' },
+          { id: 'eye-mask', name: 'Eye Mask' }
+        ] 
+      },
+      { id: 'skin-care-set', name: 'Skin Care Set', subSubCategories: [] },
+      { 
+        id: 'moisturizer', 
+        name: 'Moisturizer', 
+        subSubCategories: [
+          { id: 'face-oil', name: 'Face Oil' },
+          { id: 'face-cream-lotion', name: 'Face Cream & Lotion' },
+          { id: 'face-mist', name: 'Face Mist' },
+          { id: 'face-gel', name: 'Face Gel' }
+        ] 
+      },
+      { 
+        id: 'lip-care', 
+        name: 'Lip Care', 
+        subSubCategories: [
+          { id: 'lip-balm', name: 'Lip Balm' },
+          { id: 'lip-mask', name: 'Lip Mask' },
+          { id: 'lip-scrub', name: 'Lip Scrub' },
+          { id: 'lip-serum', name: 'Lip Serum' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: 'hair-care',
+    name: 'Hair Care',
+    icon: '💇',
+    image: 'https://i.pinimg.com/1200x/34/01/62/3401620cc6695a4a761d26b4793afd4d.jpg',
+    subCategories: [
+      { 
+        id: 'shampoo', 
+        name: 'Shampoo', 
+        subSubCategories: [
+          { id: 'shampoo-regular', name: 'Shampoo' },
+          { id: 'dry-shampoo', name: 'Dry Shampoo' }
+        ] 
+      },
+      { 
+        id: 'hair-tools', 
+        name: 'Hair Tools', 
+        subSubCategories: [
+          { id: 'hair-brushes-combs', name: 'Hair Brushes & Combs' },
+          { id: 'hair-dryers', name: 'Hair Dryers' },
+          { id: 'hair-straightener', name: 'Hair Straightener' },
+          { id: 'curling-iron', name: 'Curling Iron' },
+          { id: 'hair-styler', name: 'Hair Styler' },
+          { id: 'hair-accessories', name: 'Hair Accessories' }
+        ] 
+      },
+      { 
+        id: 'hair-treatment', 
+        name: 'Hair Treatment', 
+        subSubCategories: [
+          { id: 'hair-lotion', name: 'Hair Lotion' },
+          { id: 'hair-serum', name: 'Hair Serum' },
+          { id: 'hair-mask', name: 'Hair Mask' },
+          { id: 'hair-oil', name: 'Hair Oil' },
+          { id: 'conditioner', name: 'Conditioner' },
+          { id: 'hair-tonic', name: 'Hair Tonic' },
+          { id: 'hair-vitamin', name: 'Hair Vitamin' },
+          { id: 'hair-essence', name: 'Hair Essence' },
+          { id: 'leave-in-treatment', name: 'Leave-In Treatment' }
+        ] 
+      },
+      { 
+        id: 'hair-styling', 
+        name: 'Hair Styling', 
+        subSubCategories: [
+          { id: 'wax', name: 'Wax' },
+          { id: 'gel', name: 'Gel' },
+          { id: 'pomade', name: 'Pomade' },
+          { id: 'styling-cream', name: 'Styling Cream' },
+          { id: 'foam', name: 'Foam' },
+          { id: 'mousse', name: 'Mousse' },
+          { id: 'hair-color', name: 'Hair Color' },
+          { id: 'hair-spray', name: 'Hair Spray' },
+          { id: 'hair-mist', name: 'Hair Mist' }
+        ] 
+      },
+      { id: 'hair-care-set', name: 'Hair Care Set', subSubCategories: [] }
+    ]
+  },
+  {
+    id: 'gift-set',
+    name: 'Gift Set',
+    icon: '🎁',
+    image: 'https://i.pinimg.com/1200x/c2/93/10/c293102fb27d6ea174e60d5cae396b64.jpg',
+    subCategories: [
+      { id: 'exclusive-bundles', name: 'Exclusive Bundles', subSubCategories: [] },
+      { id: 'e-gift-card', name: 'E-Gift Card', subSubCategories: [] },
+      { id: 'gift-set-for-her', name: 'Gift Set for Her', subSubCategories: [] }
+    ]
+  },
+  {
+    id: 'bath-body',
+    name: 'Bath & Body',
+    icon: '🛁',
+    image: 'https://i.pinimg.com/736x/76/66/56/76665609a50d6cd23071c7344ee9917b.jpg',
+    subCategories: [
+      { 
+        id: 'body-treatment', 
+        name: 'Body Treatment', 
+        subSubCategories: [
+          { id: 'hand-foot-mask', name: 'Hand & Foot Mask' },
+          { id: 'bath-essentials', name: 'Bath Essentials' },
+          { id: 'cellulite-stretch-marks', name: 'Cellulite & Stretch Marks' },
+          { id: 'breast-care', name: 'Breast Care' }
+        ] 
+      },
+      { 
+        id: 'body-sun-care', 
+        name: 'Sun Care', 
+        subSubCategories: [
+          { id: 'body-sunscreen', name: 'Body Sunscreen' },
+          { id: 'body-sun-care-general', name: 'Body Sun Care' },
+          { id: 'tanning', name: 'Tanning' }
+        ] 
+      },
+      { 
+        id: 'body-cleanser', 
+        name: 'Body Cleanser', 
+        subSubCategories: [
+          { id: '2in1-body-wash', name: '2in1 Body Wash/Head-To-Toe Wash' },
+          { id: 'body-wash', name: 'Body Wash' },
+          { id: 'body-scrub-exfoliants', name: 'Body Scrub & Exfoliants' },
+          { id: 'hand-wash', name: 'Hand Wash' },
+          { id: 'hand-sanitizer', name: 'Hand Sanitizer' }
+        ] 
+      },
+      { 
+        id: 'body-care', 
+        name: 'Body Care', 
+        subSubCategories: [
+          { id: 'deodorant', name: 'Deodorant' },
+          { id: 'underarm-care', name: 'Underarm Care' },
+          { id: 'body-lotion-serum', name: 'Body Lotion / Body Serum' },
+          { id: 'body-oil', name: 'Body Oil' },
+          { id: 'body-butter-cream', name: 'Body Butter & Cream' },
+          { id: 'hand-foot-cream', name: 'Hand & Foot Cream' },
+          { id: 'foot-spray', name: 'Foot Spray' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: 'accessories',
+    name: 'Accessories',
+    icon: '🎨',
+    image: 'https://i.pinimg.com/1200x/ea/ad/9a/eaad9ae851d360170b84ae88e205b403.jpg',
+    subCategories: [
+      { 
+        id: 'organizers', 
+        name: 'Organizers', 
+        subSubCategories: [
+          { id: 'travel-bottles-makeup-case', name: 'Travel Bottles & Makeup Case' }
+        ] 
+      },
+      { 
+        id: 'others', 
+        name: 'Others', 
+        subSubCategories: [
+          { id: 'shower-cap', name: 'Shower Cap' },
+          { id: 'body-sponge', name: 'Body Sponge' },
+          { id: 'makeup-pouch', name: 'Makeup Pouch' }
+        ] 
+      },
+      { 
+        id: 'facial', 
+        name: 'Facial', 
+        subSubCategories: [
+          { id: 'cotton-pad', name: 'Cotton Pad' },
+          { id: 'cleansing-brushes', name: 'Cleansing Brushes' },
+          { id: 'blotting-paper', name: 'Blotting Paper' },
+          { id: 'facial-tools', name: 'Facial Tools' }
+        ] 
+      },
+      { 
+        id: 'makeup-brushes', 
+        name: 'Makeup Brushes', 
+        subSubCategories: [
+          { id: 'face-brushes', name: 'Face Brushes' },
+          { id: 'lip-brushes', name: 'Lip Brushes' },
+          { id: 'eye-brushes', name: 'Eye Brushes' },
+          { id: 'sponge-applicators', name: 'Sponge & Applicators' },
+          { id: 'brush-cleaner-tools', name: 'Brush Cleaner & Tools' },
+          { id: 'brush-set', name: 'Brush Set' }
+        ] 
+      },
+      { 
+        id: 'makeup-tools', 
+        name: 'Makeup Tools', 
+        subSubCategories: [
+          { id: 'eyelash-glue', name: 'Eyelash Glue' },
+          { id: 'tweezers', name: 'Tweezers' },
+          { id: 'palette', name: 'Palette' },
+          { id: 'eyelash-curler', name: 'Eyelash Curler' },
+          { id: 'sharpeners-brow-tools', name: 'Sharpeners & Brow Tools' },
+          { id: 'mirror', name: 'Mirror' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: 'fragrance',
+    name: 'Fragrance',
+    icon: '🌸',
+    image: 'https://i.pinimg.com/1200x/34/23/fa/3423fac04321a58f0d98d1a708a5b079.jpg',
+    subCategories: [
+      { 
+        id: 'body-fragrance', 
+        name: 'Body Fragrance', 
+        subSubCategories: [
+          { id: 'eau-de-parfum', name: 'Eau De Parfum' },
+          { id: 'eau-de-toilette', name: 'Eau De Toilette' },
+          { id: 'body-mist', name: 'Body Mist' },
+          { id: 'perfume-oil', name: 'Perfume Oil' }
+        ] 
+      },
+      { 
+        id: 'home-fragrance', 
+        name: 'Home Fragrance', 
+        subSubCategories: [
+          { id: 'essential-oil', name: 'Essential Oil' },
+          { id: 'aromatherapy', name: 'Aromatherapy' },
+          { id: 'room-spray', name: 'Room Spray' },
+          { id: 'scented-candles-reed-diffuser', name: 'Scented Candles And Reed Diffuser' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: 'men',
+    name: 'Men',
+    icon: '👨',
+    image: 'https://i.pinimg.com/736x/df/96/77/df9677816fefe13d72dd1b0dfc051465.jpg',
+    subCategories: [
+      { 
+        id: 'men-skin-care', 
+        name: 'Men Skin Care', 
+        subSubCategories: [
+          { id: 'men-face-wash', name: 'Men Face Wash' },
+          { id: 'men-scrub-exfoliator', name: 'Men Scrub & Exfoliator' },
+          { id: 'men-moisturizer', name: 'Men Moisturizer' }
+        ] 
+      },
+      { 
+        id: 'men-body-care', 
+        name: 'Men Body Care', 
+        subSubCategories: [
+          { id: 'men-body-wash', name: 'Men Body Wash' },
+          { id: 'men-deodorant', name: 'Men Deodorant' }
+        ] 
+      },
+      { 
+        id: 'men-hair-care', 
+        name: 'Men Hair Care', 
+        subSubCategories: [
+          { id: 'men-pomade-wax-gel', name: 'Men Pomade, Wax, & Gel' },
+          { id: 'men-styling-cream-foam-mousse', name: 'Men Styling Cream, Foam, Mousse' },
+          { id: 'men-shampoo', name: 'Men Shampoo' },
+          { id: 'men-hair-tonic', name: 'Hair Tonic' }
+        ] 
+      },
+      { 
+        id: 'grooming', 
+        name: 'Grooming', 
+        subSubCategories: [
+          { id: 'men-shaving-cream', name: 'Men Shaving Cream' },
+          { id: 'men-shaving-tool', name: 'Men Shaving Tool' },
+          { id: 'comb', name: 'Comb' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: 'home-care',
+    name: 'Home Care',
+    icon: '🏠',
+    image: 'https://i.pinimg.com/736x/41/ae/86/41ae8606da0127c8694c7e982c554a9a.jpg',
+    subCategories: [
+      { id: 'multi-purpose-sanitizer', name: 'Multi-Purpose Sanitizer', subSubCategories: [] }
+    ]
+  },
+  {
+    id: 'oral-care',
+    name: 'Oral Care',
+    icon: '🦷',
+    image: 'https://i.pinimg.com/736x/29/7e/96/297e960b1407f869f00e15c13fc96772.jpg',
+    subCategories: [
+      { id: 'toothpaste', name: 'Toothpaste', subSubCategories: [] },
+      { id: 'mouthwash', name: 'Mouthwash', subSubCategories: [] },
+      { id: 'tooth-whitening', name: 'Tooth Whitening', subSubCategories: [] }
+    ]
+  },
+  {
+    id: 'sanitary',
+    name: 'Sanitary',
+    icon: '🩹',
+    image: 'https://i.pinimg.com/736x/24/dc/72/24dc7208f1932bda94043248207814a7.jpg',
+    subCategories: [
+      { 
+        id: 'feminine-sanitary', 
+        name: 'Feminine Sanitary', 
+        subSubCategories: [
+          { id: 'pads', name: 'Pads' },
+          { id: 'tampons', name: 'Tampons' },
+          { id: 'panty-liners', name: 'Panty Liners' }
+        ] 
+      }
+    ]
+  },
+  {
+    id: 'shaving-grooming',
+    name: 'Shaving & Grooming',
+    icon: '🪒',
+    image: 'https://i.pinimg.com/736x/11/9b/da/119bdab4e951cc04a9082a814293e302.jpg',
+    subCategories: [
+      { id: 'shaving-cream', name: 'Shaving Cream', subSubCategories: [] },
+      { id: 'shaving-tools', name: 'Shaving Tools', subSubCategories: [] },
+      { id: 'comb-grooming', name: 'Comb', subSubCategories: [] }
+    ]
+  },
+  {
+    id: 'nail-care',
+    name: 'Nail Care',
+    icon: '💅',
+    image: 'https://i.pinimg.com/736x/22/2d/d6/222dd658c5fc65a5244a0cc03596be4f.jpg',
+    subCategories: [
+      { 
+        id: 'nail-treatment', 
+        name: 'Nail Treatment', 
+        subSubCategories: [
+          { id: 'nail-polish-remover', name: 'Nail Polish Remover' },
+          { id: 'nail-clippers', name: 'Nail Clippers' },
+          { id: 'nail-file', name: 'Nail File' },
+          { id: 'cuticle-care', name: 'Cuticle Care' },
+          { id: 'nail-repair', name: 'Nail Repair' }
+        ] 
+      },
+      { id: 'nail-polish', name: 'Nail Polish', subSubCategories: [] },
+      { 
+        id: 'nail-accessories', 
+        name: 'Nail Accessories', 
+        subSubCategories: [
+          { id: 'nail-stickers', name: 'Nail Stickers' },
+          { id: 'nail-tools', name: 'Nail Tools' }
+        ] 
+      }
+    ]
+  }
+];
+
+const initialProducts = {
+  skincare: [
+    {
+      id: 1,
+      name: "Acnes Complete White Face Wash 100 Gr | 50 Gr",
+      brand: "Acnes",
+      price: 34730,
+      originalPrice: 45178,
+      rating: 4.0,
+      reviews: 1000,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/2/23/6b202dc4-a666-4af3-b062-71189cee1fe3.png',
+      isNew: true,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "ACNES NATURAL CARE COMPLETE WHITE FACE WASH merupakan pembersih wajah yang mengandung ekstrak Bearberry, Arbutin, dan Vitamin C. Produk pembersih wajah ini membantu membersihkan wajah, menjaga kelembaban, serta membantu mencerahkan wajah. Selain itu, produk ini juga membantu melawan bakteri penyebab jerawat sehingga membantu mencegah jerawat, serta mencerahkan dan menyamarkan bekas jerawat.",
+    },
+    {
+      id: 2,
+      name: "Acnes Deep Cleanser Face Wash 100 Ml | 50Ml",
+      brand: "Acnes",
+      price: 30000,
+      originalPrice: 37,
+      rating: 4.9,
+      reviews: 56,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/2/22/be3b0ae7-ec8a-4902-aa5c-89bd2c6b2d6c.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pembersih wajah dengan kandungan natural active ingredient yang memberikan 3 manfaat sekaligus :Double microbeads scrub membersihkan wajah hingga ke dalam pori-pod dan membantu mengangkat sel kulit mati sehingga mencegah komedo datang kembali.Mengandung anti bakteri untuk melawan bakteri penyebab jerawat.Menjaga kelembaban dan kelembutan kulit, kulit tampak bersih berseri.",
+    },
+    {
+      id: 3,
+      name: "Acnes Derma Gentle Cleanser 120Ml",
+      brand: "Acnes",
+      price: 66700,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/12/25/999cc0e7-3dd1-4f3b-b2b0-fd2e05748d60.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Acnes Derma Gentle Cleanser 120MlPembersih wajah dengan PH seimbang yang lembut dan ringan. Diformulasikan khusus untuk kulit sensitif dan berjerawat. Dengan manfaat acne care untuk membantu merawat kulit berjerawat dan vitamin C untuk menutrisi kulit. Kulit bersih dan tetap sehat.Cara pakai: Usapkan pada wajah, pijat perlahan dengan gerakan memutar, lalu bilas hingga bersih. Untuk hasil optimal gunakan dengan Acnes Derma Care series lainnya.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 4,
+      name: "Acnes Natural Care Face Wash Yoghurt Touch Series",
+      brand: "Acnes",
+      price: 17800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/2/12/22d484b0-348f-408b-9819-57bb0e5fd723.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Acnes Facewash Yogurt Touch  merupakan salah satu rangkaian produk perawatan wajah dari Acnes yang bekerja menutrisi dan menghaluskan kulit. Sabun pembersih wajah dari Acnes ini diformulasikan dengan ekstrak yogurt yang kaya akan nutrisi dan menjaga tektur kulit tetap lembut. Mengandung vitamin C dan B3 untuk mencerahkan kulit dan diperkaya dengan ekstrak aloe vera untuk menjaga kelembaban dan kelembutan alami kulit. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 5,
+      name: "Acnes Treatment Creamy Wash 100 Gr | 50 Gr",
+      brand: "Acnes",
+      price: 33120,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/3/1/1001d0e3-35f5-4415-8b8a-fb0092159f55.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Acnes Creamy Wash, pembersih wajah yang mampu membantu membersihkan dan mengangkat kotoran, debu dan minyak berlebih yang menempel pada kulit wajah. Dilengkapi dengan anti bakteri isopropylmethylphenol yang dapat dijadikan sebagai pembersih make-up sehari- hari untuk menghindari timbulnya jerawat. Diperkaya dengan nutrisi vitamin C dan E untuk merawat kelembutan kulit wajah. Membersihkan kulit wajah, Melembutkan kulit wajah , Mencegah jerawat, Mengecilkan pori-pori.",
+    },
+    {
+      id: 6,
+      name: "Acnes Treatment Washing Bar Sabun Batang - 80 gram",
+      brand: "Acnes",
+      price: 11270,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/10/7c50df87-af50-4de5-8dd0-b012e3230e4a.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Acnes Washing Bar Sabun Batang [80 g]Acnes Washing Bar Sabun Batang [80 g] adalah sabun batangan yang lembut untuk mengatasi masalah jerawat di badan (terutama bagian dada & punggung), melembutkan dan merawat tubuh yang berjerawat, mengurangi & mencegah kemerahan pada kulit akibat jerawat.Cara Pakai :Busakan sabun secara merata, terutama di bagian tubuh yang berjerawat seperti punggung dan dadaGunakan setiap hari pada waktu mandiCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).a ada editing)",
+    },
+    {
+      id: 7,
+      name: "Ainie Papaya Brightening Soap Extract 135 gr",
+      brand: "Ainie",
+      price: 14145,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/7/11/c4b9b887-9a91-4fc2-9d7a-67607a15c9e3.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun Papaya Whitening Soap Ainie adalaah sabun pembersih tubuh yang terbuat dari minyak kelapa berkualitas dan diperkaya dengan ekstrak Papaya, Vitamin, dan Arbutin. Kegunaan :- Membantu mencerahkan kulit- Melembabkan dan melembutkan kulitCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 8,
+      name: "Avione Royale Acne Care Facial Wash - 100 ml",
+      brand: "Avione",
+      price: 50715,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/15/b78707ee-8a87-4b79-8d0d-550584c15967.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Manfaat :Sabun cuci muka yang berfungsi untuk Anti-inflammatory & Antioxidant juga dapat membantu merawat kulit yang berjerawat dan membersihkan wajah dari kotoran dan polusi. (FUNGAL ACNE SAFE)Cara penggunaan :1. Bilas wajah dengan air bersih2. Tuangkan sabun cuci muka secukupnya pada telapak yang sudah dibersihkan3. Ratakan pada wajah kemudian pijat wajah perlahan dengan gerakan memutar4. Bilas wajah hingga bersih5. Untuk hasil yang maksimal disarankan gunakan facial wash 2x/hariCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 9,
+      name: "Avione White Expert Purifying Facial Foam 75g",
+      brand: "Avione",
+      price: 46575,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/15/6c2992b5-16f9-45ff-99ed-a1b7cc847735.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun pembersih muka dengan busa yang lembut namun efektif untuk mengangkat make up dan kotoran dari kulit wajah sehingga terasa bersih dan segar. Mengandung moisturizer dan Babassu Oil untuk menjaga kelembaban kulit. Cocok untuk semua jenis kulit.CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 10,
+      name: "Azarine Acne Gentle Cleansing Foam 60 mL",
+      brand: "Azarine",
+      price: 29325,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/2/12/bedb94f9-2343-4cd6-b99e-11e2691918d7.png',
+      isNew: true,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Azarine Acne Gentle Cleansing Foam 60mlPembersih Wajah Bebas Minyak Untuk Kulit BerjerawatAzarine Spa & Cosmetics Acne Gentle Cleansing Foam, pembersih wajah bebas minyak yang diformulasikan untuk kulit berjerawat. Kandungan alami Portulaca ( anti-irritant ), honey dan salicylic acid membantu mencegah pertumbuhan bakteri penyebab jerawat dan mengangkat kelebihan minyak pada wajah. Ekstrak lemon membantu merawat dan mengecilkan pori. Rasakan indahnya kulit sehat bebas jerawat. Pembersih wajah yang sempurna untuk membersihkan jerawat dan mengontrol sebum. Diformulasikan dengan bahan alami purslane, madu dan asam salisilat membantu mencegah pertumbuhan bakteri penyebab jerawat, mengangkat kelebihan minyak pada wajah dan mengecilkan pori-pori. Rasakan kulit sempurna seperti bayi lagi yang bebas dari jerawat dan minyak.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 11,
+      name: "Azarine Active Bright Brightening Creamy Facial Foam 50gr",
+      brand: "Azarine",
+      price: 23000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/8/7/d296a837-c8f0-45e6-8f47-895ae29dba64.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun cuci muka yang dapat digunakan setiap hari dengan tekstur creamy yang lembut tanpa bikin kering atau terasa tertarik. Dengan PH Balance (PH 5-5.5) diformulasikan dengan bahan aktif Niacinamide dan Arbutin yang berfungsi untuk membersihkan, menyegarkan, mencerahkan sekaligus menjaga hidrasi kulit.Brightening Creamy Facial Foam dapat digunakan untuk semua jenis kulit termasuk kulit yang sensitif.1. Niacinamide: Melembapkan, memudarkan bekas jerawat dan mengontrol sebum.2. Arbutin: Mencerahkan kulit kusam, flek hitam, dan bekas jerawat.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 12,
+      name: "AZARINE Brightening Facial Cleanser 60 mL",
+      brand: "Azarine",
+      price: 31769,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/7/12/9d64d828-fcf1-46ca-b822-5b714852438e.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pembersih wajah yang segar, lembut dan creamy untuk membantu mencerahkan dan membersihkan kulit dari kotoran dan sisa make up. Kandungan Natural AHA dan BHA membantu mengangkat kotoran serta melembabkan kulit.Kandungan 5 Ekstrak alami dari papaya, lemon, mulberry, yogurt dan bengkoang membantu mencerahkan dan menutrisi kulit wajah tampak lebih cerah, segar dan halus.",
+    },
+    {
+      id: 13,
+      name: "Bioaqua Facial Wash SymWhite 377 Low PH Brightening Cleanser 100gr - Sabun Cuci Muka",
+      brand: "Bioaqua",
+      price: 60030,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/6cfa05af98604dfc8177cfac0efed608~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "BIOAQUA SymWhite 377 Low PH Brighten Cleanser 100gMembersihkan minyak dan kotoranMembersihkan dengan lembutMembersihkan hingga ke pori-pori terdalam, kulit tidak terasa tertarik setelah pembersihanMencerahkan dan samarkan nodaMelembapkan dan jaga stabilitas kulitKandungan:Glabridin + Arbutin : Halang hiperpigmentasiFerulic Acid : Hambat aktivitas melaninSymwhite 377 + Tranexamic Acid : Mengurangi produksi melaninVitamin C : Mempercepat metabolisme sel melanosit5% Niacinamide+3X Peptide : Mengurangi pengendapan melaninBPOM ：NA11221201101",
+    },
+    {
+      id: 14,
+      name: "Biore Facial Foam Bright Oil Clear 100Gr",
+      brand: "Biore",
+      price: 31050,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2021/8/5/fa0eaf95-a4e2-49f0-8cc8-0348297ca161.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Biore meyakini bahwa mencuci wajah adalah tahap terpenting untuk memiliki kulit cantikMembersihkan wajah berminyak secara menyeluruh dan menjadikannya halus bercahayaMemperkenalkan Skin Caring Facial Foam:- Dengan Skin Purifying Technology dari Jepang menyerap kotoran, keringat dan minyak berlebih, namun tetap menjaga kelembapan kulit- Diperkaya dengan natural scrub untuk cerahkan kulit kusam akibat minyak berlebih dan penumpukan sel kulit mati- Busa creamy yang lembutKulit lembut halus bercahaya dan bebas kilapBaik jika membersihkan dengan cara:1. Basahi wajah2. Pada tangan, gunakan air untuk membuat facial foam yang kaya akan busa3. Lakukan pijitan ringan ke seluruh wajah (hindari daerah mata) dan basuh dengan air",
+    },
+    {
+      id: 15,
+      name: "Biore Facial Mild Smooth 40G",
+      brand: "Biore",
+      price: 16675,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2021/8/5/ebecd406-5a1e-461a-9d9f-9d0c2c567e3d.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Biore Facial Foam Mild Smooth 40g efektif membersihkan wajah tanpa membuat kulit kering, sehingga kulit halus dan terjaga kelembapannya dengan busa lembut dan creamy, serta skin purifying technology (SPT) dari jepang menyerap kotoran, keringat dan minyak berlebih, namun tetap menjaga kelembapan kulit.",
+    },
+    {
+      id: 16,
+      name: "Biore Men Pore Pack Black Strip Isi 4 Pcs",
+      brand: "Biore",
+      price: 14375,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/2/17/87127b5d-3448-4f6a-9ec0-2987821b6876.png',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Biore cleansing• Mampu mengangkat komedo dengan formula Oil Absorbing agent• Menyerap minyak berlebih dan membuat wajah Anda tampak sehat, bersih dan cerah alami• Pengangkat komedo berbentuk plester dari Biore ini didesain khusus untuk mengangkat komedo secara menyeluruh dan membuat pori Anda tampak mengecilCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 17,
+      name: "Biore Men's Deep Fresh Facial Foam 100 gr",
+      brand: "Biore",
+      price: 36340,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/17/512bc10b-32ff-44ef-82f2-60eb43986f92.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Men's Biore Facial Foam Deep Fresh Membantu Memberikan Kesehatan Pada KulitMampu Membantu Menyerap Minyak Serta Kotoran Pada WajahMembantu Mencegah Terbentuknya KomedoCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 18,
+      name: "Biore Skin Caring Acne Care Facial Foam 100 gr",
+      brand: "Biore",
+      price: 31050,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2021/8/5/be26bd10-ae00-414d-a8e8-4d42596a2787.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Biore Acne Care Facial Foam 100gBiore Acne Care Facial Foam adalah sabun pembersih wajah dengan kandungan Anti-bacterial dan Triclosan di dalamnya yang dapat membantu mencegah timbulnya jerawat dan mengangkat minyak berlebih di wajah, namun tetap menjaga kulit agar tetap lembab.",
+    },
+    {
+      id: 19,
+      name: "Cetaphil Daily Exfoliating Cleanser 178Ml",
+      brand: "Cetaphil",
+      price: 119500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/2/5/d28d45f3-d273-403a-9b88-f5e546a29a9f.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Daily Exfoliating Cleanser 178Ml adalah sabun cuci muka Eksfoliasi lembut tanpa terlalu mengeringkan atau mengiritasi kulit , Membantu meningkatkan tekstur untuk mengungkapkan kulit yang sehat dan bersinar , Cukup lembut untuk digunakan sehari-hari , Hypoallergenic dan tidak komedogenik , Dermatolog diuji dan secara klinis terbukti lembut pada kulit sensitif   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasih",
+    },
+    {
+      id: 20,
+      name: "Cetaphil Daily Facial Cleanser Gel Foaming 236 Ml",
+      brand: "Cetaphil",
+      price: 176472,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/94fd50534e284509886e59e42099757f~.jpeg',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Daily Facial Cleanser 236mlPembersih dengan formula rendah busa yang dirancang untuk kulit normal hingga berminyak, bahkan sensitif untuk menghilangkan kotoran, minyak berlebih, dan riasan. Membersihkan secara mendalam dan meminimalkan tampilan pori-pori tanpa menghilangkan kelembapan alami kulitBPOM : NE11231200014Netto : 236 ML",
+    },
+    {
+      id: 21,
+      name: "Cetaphil Gentle Skin Cleanser Series",
+      brand: "Cetaphil",
+      price: 357880,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/10/13/58939dcb-90be-42c1-9bed-0b05d3b830d4.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Gentle Skin Cleanser diformulasikan sebagai pembersih wajah pengganti sabun untuk kulit kering, normal, kombinasi, dan berjerawat.Cetaphil Gentle Skin Cleanser ini adalah formulanya yang sederhana dan lembut namun efektif membersihkan sekaligus melembapkan kulit, tanpa tambahan pewangi dan tidak mengandung busa berlebihan sehingga lembut di kulit dan tidak merusak kelembapan alami kulit. Dibuat dengan pH seimbang untuk menjaga kadar asam dan basa pada permukaan kulit, juga membantu keseimbangan antara kandungan air dan minyak alami pada kulit. Formulanya hypoallergenic dan telah teruji secara dermatologi sehingga cocok sebagai pembersih untuk kulit sensitif sekalipun.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 22,
+      name: "Cetaphil Hydrating Foaming Cream Cleanser 236 Ml",
+      brand: "Cetaphil",
+      price: 147200,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/c24cc3843d904de5be8ec506d8f6a206~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Hydrating Foaming Cream Cleanser 236mlCetaphil Hydrating Foaming Cream Cleanser adalah pembersih wajah dengan tekstur cream-to-foam yang bernutrisi membersihkan tanpa membuat skin barrier menjadi kering dan telah terbukti secara klinis dapat mengangkat minyak dan kotoran yang tersumbat pada pori-pori. Foaming Cream Cleanser dapat menjaga, menghidrasi, dan menenangkan pelindung skin barrier alami dan pH kulit. Penggunaan sehari-hari untuk kulit Dry to Normal, kulit sensitif.Berawal dari tekstur krim, Cetaphil Hydrating Foaming Cream Cleanser akan berubah menjadi busa saat disampur dengan air. Formulanya juga efektif membersihkan tanpa bikin skin barrier kering, sehingga sangat cocok digunakan untuk semua jenis kulit termasuk yang kering dan sensitif.",
+    },
+    {
+      id: 23,
+      name: "Cetaphil Oily Skin Cleanser 125",
+      brand: "Cetaphil",
+      price: 170000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/2/2/4a65fd8e-196c-450c-83b1-f49aaa5afb8d.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Oily Skin Cleanser 125Adalah Cetaphil Cleanser dengan lembut menghilangkan minyak, kotoran, dan make up tanpa merusak permukaan kulit.Oil under control. Sebuah pembersih yang efektif untuk kulit berminyak, kombinasi, dan mudah berjerawat. Pemakaian secara teratur Cetaphil Oily Skin Cleanser 125ml membantu mengecilkan pori-pori dan menjadikan wajah segar, bersih dan bebas kilap namun tetap lembab dan kenyal. Sangat cocok untuk kamu yang memiliki kulit normal cenderung berjerawat, kulit kombinasi maupun kulit berminyak.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 24,
+      name: "Cetaphil Oily Skin Cleanser 125ml - Kulit Berminyak",
+      brand: "Cetaphil",
+      price: 196452,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/67f4ddbe9dea492fbce568ce5a48ce80~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Oily Skin Cleanser adalah sabun pembersih wajah yang tepat untuk kulit berminyak hingga kulit sensitif sekalipun. Dapat digunakan setiap hari dengan formulanya yang lembut dan sedikit busa dapat membantu mengurangi minyak berlebih tanpa mengurangi kelembapan kulit.  Cetaphil Oily Skin Cleanser adalah pembersih wajah untuk kulit berminyak yang teruji klinis membersihkan dan mengurangi kadar minyak berlebih diwajah dalam 2 minggu tanpa membuat kulit kering.Cara Penggunaan:Tuangkan secukupnya, pijatkan perlahan ke kulit wajah yang basah lalu bilas dengan air.",
+    },
+    {
+      id: 25,
+      name: "Cetaphil Soothing Foam Wash 200 ml Series",
+      brand: "Cetaphil",
+      price: 307625,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/15/28283be1-95b2-4c07-a17a-7d908dabdac9.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Cetaphil Soothing Foam Wash adalah sabun pembersih wajah yang diformulasikan sebagai pengganti sabun untuk melawan 5 tanda kulit sensitif. Formula Allantoin, Glycerin, dan Triple Ceramides yang membersihkan, menghidrasi, dan menenangkan kulit, membantu memperkuat fungsi skin barrier.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 26,
+      name: "Clean & Clear Daily Pore Cleanser Series - Oil Free",
+      brand: "Clean & Clear",
+      price: 36225,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/4/29/24c6af03-2c0a-4abd-990b-fb07d8b545c0.png',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Clean & Clear Daily Pore Cleanser Series - Oil FreeMembersihkan komedo dan pori yang tersumbat pada sumbernya, menyerap dan mengurangi minyak berlebih yang menyebabkan komedo dan mencegah terbentuknya komedo baru (Oil control)untuk Wajah berkomedo, berminyak dan berpori besarSalicylic Acid, Apple Extract, Micro Beads, dan PURERICE yang bekerja dengan dua cara untuk membersihkan komedo dan membantu mengecilkan pori-pori untuk kulit lebih bersih, lembut dan halus. Kulit terasa bersih dan lembut.CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 27,
+      name: "Clean & Clear Facial Wash Oil Free Series",
+      brand: "Clean & Clear",
+      price: 29095,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/13/d924c6f8-2712-4fcf-b46d-37a54aa625f7.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Clean & Clear Foaming Face WashPembersih wajah dengan busa lembut yang dapat mengangkat minyak&kotoran di wajah anda menjadi lebih segar tanpa membuat kulit menjadi kering,dengan bahan aktiv anti bakteri&formula oil free nya yang dapat membantu untuk mencegah timbulnya jerawat&komedo pada wajah anda.Cara pakai : Mencuci tangan terlebih dahulu guna menghindari terjadinya kontaminasi kuman.Basuh wajah dengan air suhu hangat agar dapat membuka pori pori wajah.Tuangkan facial foam secukupnya ke telapak tangan lalu basuhkan ke wajah secara perlahan dengan gerakan memijat agar semua minyak&kotoran pada wajah bisa terangkat.Lalu bilas wajah dengan air dingin agar pori pori tertutup&wajah terasa segar juga fresh.Informasi penting!!Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 28,
+      name: "Clean & Clear Foaming Face wash Twin Pack (isi 2) 100ml",
+      brand: "Clean & Clear",
+      price: 43585,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/30/04e2f04d-e266-4fb2-b209-3d91348e6299.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "CLEAN & CLEAR Foaming Facial Wash Twin pack 100 ml x 2 pcs Merupakan produk pembersih wajah dengan tekstur gel yang lembut dan memberi sensasi dingin menyejukkan saat diaplikasikan pada wajah setelah beraktivitas seharian. Pembersih wajah ini mengandung bahan aktif anti-bacterial yang ampuh membasmi jerawat dan mampu membersihkan tanpa membuat kulit jadi kering. segera aplikasikan clean & clear Foaming Facial Wash pada wajah dan jaga kebersihan setiap hari. - CLEAN & CLEAR - Produk pembersih wajah - Ampuh membasmi jert dan mampu membersihkan tanpa membuat kulit jadi kering - Isi: Twin Pack 100 ml x 2 pcsCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 29,
+      name: "Clean & Clear Fruit Essential Facial Cleanser Lemon 100 ml",
+      brand: "Clean & Clear",
+      price: 26500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/13/059ec1ec-374b-4b8f-8704-ec2412e5821b.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Clean  amp; Clear Fruit Essential Facial Cleanser Lemon 100 ml Natural Lemon Extracts yang kaya akan vitamin C yang mencerahkan kulit. pembersih ini akan membersihkan minyak dan kotoran secara menyeluruh tanpa membuat kulit kering, untuk kulit terasa bersih, segar, dan tampak berseri. Direkomendasikan untuk kulit normal hingga berminyak.   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 30,
+      name: "Clean And Clear Natural Bright Face Wash 50 Ml",
+      brand: "Clean & Clear",
+      price: 24380,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/13/c75046a3-2673-412c-99cf-9bd4f1edcf29.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Clean And Clear Natural Bright 50 MlDirancang untuk masalah kulit muda untuk secara lembut mengungkapkan kecerahan alami Anda. Pencucian wajah aksi ganda baru bekerja dengan dua cara:1. Air mawar membantu membersihkan kusam yang menyebabkan kotoran.2. Madu dan Glycerin alami membantu menyehatkan kulit Anda agar kulit Anda bersih, jernih dan cerah alami.Informasi penting!!Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 31,
+      name: "Cosrx Low pH Good Morning Cleanser - Series",
+      brand: "Cosrx",
+      price: 160425,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/7/26/522a569a-58c4-49ee-9289-439b672bb890.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pembersih wajah dengan formula lembut, mampu membersihkan kulit sensitif sekalipun dengan lembut berkat kandungannya yang memiliki kadar acid yang mirip dengan kadar pH kulit. Gel cleanser ini mampu menenangkan, mengeksfoliasi, melembapkan sekaligus membersihkan kulit wajah. Pembersih wajah ini juga mampu mengangkat sel-sel kulit mati dan minyak berlebih yang muncul selama tidur sehingga wajah menjadi bersih dan segar.Cara Pengunaan:Gunakan pada pagi & malam setiap hari untuk hasil yang lebih efektifCocok untuk kulit:Semua Jenis Kulit, Kulit SensitifCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 32,
+      name: "COSRX Salicylic Acid Daily Gentle Cleanser - 150ml",
+      brand: "COSRX",
+      price: 160425,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/29/d6d130bb-a372-49ae-95f6-50b861e3aed0.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "COSRX Salicylic Acid Daily Gentle Cleanser 150mlPembersih wajah berbentuk busa dengan kandungan salicylic acid yang berfungsi melawan jerawat dan mengurangi produksi minyak di wajah. Cocok untuk kulit berjerawat, acne prone, kulit sensitif dan kombinasi karena menggunakan botanical ingredients (bahan alami). Mengandung tea tree oil yang juga berfungsi menenangkan jerawat, anti inflamasi, anti bakteri dan anti septik. Produk ini mampu mengeksfoliasi kulit mati serta merawat kulit wajah agar tetap kencang tanpa terasa kering. Bebas dari kandungan paraben dan sls (sodium lauryl sulfate). Membantu mengurangi timbulnya jerawat dan menghasilkan kulit yang bersih. Cocok untuk kulit berjerawat.CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 33,
+      name: "Dermies Clear Me Facial Wash Ph Balance - 60Gr",
+      brand: "Dermies",
+      price: 36570,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/3/21/fad5f60f-153e-4913-ae51-6c89f3c03da1.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pembersih wajah dengan kandungan antibakteri, membantu membersihkan wajah dari kotoran dan minyak berlebih. Dengan formula pH balance yang membantu menjaga keseimbangan pH kulit wajah. Mengandung BHA, Panthenol dan ZincPCA. 1) Salicylic Acid berfungsi untuk mengangkat sel kulit mati dan juga berfungsi sebagai antibakteri, mampu menghambat pertumbuhan bakteri penyebab jerawat (P, aches dan C)2) Zinc PCA memiliki efek anti inflamasi dan anti oksidan, membantu regenerasi sel-sel kulit mati dan mengontrol produksi sebum, membantu menghambat pertumbuhan jerawat, serta memiliki sifat anti mikroba dan astrigent3) Kandungan Moisturizer pada Panthenol untuk melembabkan kulit, meningkatkanNetto: 60grCara Pemakaian:1. Aplikasikan pada wajah yang sudah dibasahi2. Pijat lembut selama 60 detik3. Bilas hingga bersih dan keringkan4. Untuk hasil yang lebih optimal, gunakan rangkaian Clear Me lainnya.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 34,
+      name: "Eiem Beauty Barrier Cleanser Gentle Cleansing 50 Ml",
+      brand: "Eiem",
+      price: 40020,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/1/24/38e89aa3-153f-4a7b-b6be-052de643874e.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "EIEM Beauty Cleanser With Natural Ingreedients & No SulfateCeramide, Centella Asiatica, dan Hyaluronic AcidMengandung Ceramide yang menjaga skin barrier, serta Centella asiatica dan hyaluronic acid yang menenangkan kulitMembersikan kulit secara optimal tanpa meninggalkan kesan kulit terasa kering.Barrier Cleanser ini juga hadir dengan no sulfate ingredients dan low ph yang efekt menjaga kulit tetap terjaga kelembapannya Cara pakai:Ambil Barrier Cleanser secukupnya di telapak tangan, baurkan dengan sedikit dir dan aplikasikan pada seluruh bagian kult wajah dengan pijatan lembut, bilas dengen air bersih dan kini kulitmu siap untuk menggunakan tahapan skincare berikut.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 35,
+      name: "Emina Creamy Milk Cleansing Lotion - 50 Ml",
+      brand: "Emina",
+      price: 23949,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/10/25/37b6d444-b879-4879-beb1-d8b4d37d9029.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Emina Creamy Milk Cleansing Lotion - 50 MlSusu pembersih tekstur lembut dikombinasikan dengan Glycolic Acid membantu menghilangkan makeup dan kotoran dengan lembut tanpa meninggalkan residu minyak dan menghilangkan kelembaban kulit . Membersihkan wajah dengan cream lembut yang ringan dan tidak meninggalkan rasa lengket setelah digunakan . Memiliki pH balance (sama dengan kulit) sehingga cocok untuk semua jenis kulit. Memiliki  aktif pembersih, antioksidan dari grape seed extract, vitamin B3 yang dapat membuat wajah tampak lebihCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 36,
+      name: "Emina Glo Rad+ Hassle Free Cleanser Amino Fusion ProCleanser 100ml",
+      brand: "Emina",
+      price: 58650,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/788cece95b204090b2459a53bfe7f9ff~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Micellar-Oil fusion first cleanser yang memiliki tekstur unik milky gel dimana mengkombinasikan ringannya micellar water dengan cleansing power dari oil cleanser tanpa greasy. Dengan kandungan bahan aktif dan teknologi:1. Kombinasi Dual Oil-Micelles: membersihkan makeup dengan ringan, mudah, dan efektif2. Pentavitin, Glucan dan Amino Acid: memberikan kelembapan selama 72 jam tanpa memberikan efek kencang dan tertarik pada kulit serta meningkatkan natural skin barrier kulit, dengan pH Balance formula.",
+    },
+    {
+      id: 37,
+      name: "Emina Series Back To School Free Face Wash 50 ml",
+      brand: "Emina",
+      price: 98440,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/12/28/120cc2ac-a8f2-417f-8bfe-af88e9441cb5.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Buy Back To School (Tone up cream, lip serum, face wash)  Free Face Wash 50mlCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 38,
+      name: "Erha Acneact Oil Free Acne Control Cleanser - 100Ml",
+      brand: "Erha",
+      price: 93035,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/3/14/4f5a8592-43dd-4b1e-bb47-3fd4bccaae44.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Erha Acneact Oil Free Acne Control Cleanser - 100MSabun pembersih wajah dengan kombinasi BHA & Sulfur dengan 3 manfaat utama: Membersihkan hingga ke dalam pori, mengontrol minyak, dan melawan bakteri penyebab jerawat.Ingredient1. BHA (Salicylic Acid)Membersihkan minyak berlebih dan melawan bakteri penyebab jerawat2. SulfurMembantu mengangkat sel kulit mati dan kotoran serta melawan bakteri penyebab jerawat.Cara pakai:1. Aplikasikan pada kulit wajah yang sudah dibasahi2. Bilas dengan air bersih3. Gunakan 2 kali sehariUrutan Pemakaian:1. Cleanser2. Toner3. Serum4. Moisturizer5. SunscreenBPOM: NA18211208842CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 39,
+      name: "Erha Acneact Witch Hazel & Bha Gentle Acne Facial Wash - 100G",
+      brand: "Erha",
+      price: 90900,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/31/d0b2d809-da90-40e9-a31d-044dd33f6f84.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Dikembangkan dengan formula dermatologi Erha Gentle Acne Facial Wash merupakan sabun pembersih wajah untuk kulit berjerawat. Berbentuk gel, berbusa, dan tanpa scrub efektif mengangkat kotoran dan sel kulit mati secara lembut, menenangkan inflamasi pada kulit berjerawat tanpa menjadikan kulit kering. Aman digunakan sehari-hari oleh pria dan wanita.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 40,
+      name: "Erha His Erha Gentle Acne Facial Wash - 100 gr",
+      brand: "Erha",
+      price: 102350,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/4/30/1a0fe924-5242-4ae3-a930-36f59ef172b6.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "His Erha Gentle Acne Facial Wash - 100grmerupakan Pembersih yang diformulasikan khusus untuk pria dengan kulit yang cenderung berminyak dan berjerawat.Mengandung Salicylic Acid (BHA) yang membantu mengatasi jerawat dan Zinc PCA yang berfungsi untuk menjaga kelembapan pada kulit. Dilengkapi dengan scrub lembut yang membantu mengangkat sel kulit mati dan kotoran yang menyebabkan penyumbatan poriDapatkan 3 keuntungan menggunakan His Erha Gentle Acne Facial Wash - 100gr- Diformulasikan khusus untuk Pria dengan wangi masculine.- Menggunakan ingredients yang efektif untuk membantu mengatasi jerawat dan mengontrol minyak berlebih pada kulit pria.- Dilengkapi dengan Gentle Scrub yang berbentuk sferis sehingga tidak mengiritasi kulit saat digunakan dan membantu untuk mengankat sel kulit mati dan kotoran.Aman untuk digunakan pada kulit berjerawat atau kulit yang cenderung berjerawat atau sensitif.CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 41,
+      name: "Erha Truwhite Brightening Facial Wash - 90 Ml",
+      brand: "Erha",
+      price: 104535,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/3/22/753be503-9621-471a-bf6f-edfccd881f72.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Bersihkan wajah dari debu dan kotoran serta menjadikan wajah tampak cerah dan segar dengan ERHA Truwhite Brightening Facial Wash.Sabun pembersih wajah bertekstur gel dengan mild surfactant non SLS untuk membersihkan wajah dari kotoran sekaligus membantu mencerahkan kulit dan menyamarkan noda hitam tanpa menjadikan kulit menjadi kering.Cocok untuk semua jenis kulit. Truwhite Brightening Facial wash dapat digunakan mulai umur 12 tahun ke atas juga dapat digunakan oleh ibu hamil dan menyusuiIngredients:Niacinamide    Membantu mencerahkan, melembapkan & mengatasi produksi sebum di wajah    Bromelain:    Kandungan unik dari Enzim nanas ini merupakan bahan pengelupasan alami untuk mengangkat sel kulit mati, meremajakan & meratakan lapisan kulit  Aloe Vera with hazel    Membuat kulit terasa lembap setelah dicuci, dan memperbaiki tampilan pori    VITAMIN E:    Antioksidan untuk mencegah efek buruk radikal bebasCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 42,
+      name: "Facetology Triple Care Facial Gel Cleanser 100ml",
+      brand: "Facetology",
+      price: 61180,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/9af544ad6c5044ad820d3d8b96659e2a~.jpeg',
+      isNew: true,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Facial Gel Cleanser yang diformulasikan mampu membersihkan, menghilangkan kotoran dan minyak hingga ke dalam pori yang menyumbat serta aman untuk semua jenis kulit dengan memberikan hidrasi yang cukup, lembut, dan menenangkan di wajah, tanpa membuat kulit menjadi terasa kering, ketarik maupun iritasi serta mampu menjaga kulit dari radikal bebas. Cleanser ini memiliki pH yang rendah (5,0 - 5,5) sehingga mampu mengembalikan kadar pH kulit. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 43,
+      name: "Fluff Extra Gentle Facial Foam Cleanser - 100 ml",
+      brand: "Fluff",
+      price: 59800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/7/11/fd3cd7d4-34a5-4eba-9a62-31c798fd78ac.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Fluff Facial Foam Cleanser 100mlManfaat :- foam cleanser dengan busa yang lembut, dapat membersihkan dan melembapkan kulit wajah.- mengangkat kotoran dan make-up- menjadikan kulit wajah terasa bersih dan tetap lembap setelah dibilas- cocok untuk semua jenis kulitnetto 100mlCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 44,
+      name: "Garnier Light Comp Sachet Foam 9Ml",
+      brand: "Garnier",
+      price: 6440,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/12/11/91551fdd-cbad-4073-bd51-92af5c0842fe.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "GARNIER Light Complete Foam Foam pembersih wajah yang membersihkan wajah dengan lembut dan membantu mencerahkan kulit wajah. Sabun cuci muka dengan bahan alami menggunakan Sari Lemon yang berguna untuk membersihkan wajah dengan lembut dan membantu mencerahkan kulit wajah. Aroma lemon yang terdapat di dalamnya membuat kulit terasa segar setelah menggunakannya.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 45,
+      name: "Garnier Men Acno Fight 12 in 1 Foam 100 mL (Pack of 3)",
+      brand: "Garnier",
+      price: 41285,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/2/21/dc6fee75-27e9-46d4-9e3e-63b691dcf38f.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun pembersih wajah pria yang mengurangi 12 tanda masalah jerawat dan minyak.Sabun pembersih wajah pertama dari Garnier untuk pria dengan masalah jerawata yang diperkaya dengan Herba Repair dan Purifying Salicylic Acid. Formulanya membantu mengurangi 12 tanda masalah jerawat, yaitu: Minyak berlebih, timbulnya jerawat, komedo, bintik pori-pori besar, noda jerawat, bekas jerawat, kulit kasar dan kering, kusan, tekstur tidak merata dan warna tidak merata. Untuk kulit berminyak dan masalah jerawat berulang.",
+    },
+    {
+      id: 46,
+      name: "Garnier Men Acno Fight Wasabi Brightening Foam 100 ml - 3 pcs",
+      brand: "Garnier",
+      price: 41285,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/16/3867c336-916f-4d97-8b14-fb24b732d492.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pembersih wajah dari Garnier Men yang membuat kulit yang tampak cerah segar dan bantu lawan jerawat setiap hari diperkaya dengan ekstrak wasabi yang lembut dan Salicylid Acid yang dikenal sebagai bahan anti-bakteri . Formulanya membantu kurangi minyak berlebih , lawan jerawat &  komedo , dan pori tampak kecil . Untuk kulit normal  cenderung berrminyak & berjerawat CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 47,
+      name: "Garnier Men Turbo Bright Super Duo Foam 100 ml - Pack of 3",
+      brand: "Garnier",
+      price: 41285,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/12/c9b22aa9-76d8-483a-bea3-7128230b8709.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Garnier Men Turbo Bright Super Duo Foam 100 ml Pack offFoam pembersih wajah yang lembut yang mengandung bahan anti bakteri mineral clay dan micro beads yang mencerahkan kulit wajah. Masalah yang biasa timbul diantaranya warna kulit tidak rata, kekusaman, kulit agak gelap efek paparan sinar UV, bintik hitam, kulit tidak halus, pori besar, dan minyak berlebih pada wajah Anda.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 48,
+      name: "Garnier Men Turbo Light Series - 100 | 50",
+      brand: "Garnier",
+      price: 41285,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/1/29/fe91292b-ed84-45f9-bcbc-d543ca8ed8bc.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Garnier Men Oil Control Brightening Icy Scrub adalah sabun scrub pembersih wajah dengan kandungan:- Ekstrak Lemon dan scrub untuk eksfoliasi sel kulit mati pada lapisan epidermis;- Mineral clay dan micro beads untuk membersihkan minyak berlebih.- Wajah terlihat bersih dan lebih cerah, serta terasa dingin.Garnier Men Oil Control Super Duo Foam dapat membersihkan kulit wajah secara menyeluruh berkat berbagai kandungan mineral dan nutrisi seperti Icy Mineralite Complex dan White Clay. pembersih wajah ini mampu menyerap minyak berlebih, mengangkat kotoran dan debu pada kulit wajah akibat polusi serta mengangkat sel-sel kulit mati sehingga wajah tampak lebih bersih dan segar.Garnier Men Oil Control Matcha Deep Clean Foaming Gel adalah gel pembersih wajah pertama khusus pria dengan ekstrak matcha yang mengandung 100X antioksidan. Produk ini mampu membersihkan wajah secara menyeluruh hingga ke pori-pori, mengangkat sisa debu, kotoran, dan polusi, tanpa membuat kulit terasa kering. Cocok untuk kulit yang berminyak dan terpapar debu polusi.Garnier Men Oil Control Cooling Foam adalah sabun pembersih wajah pria dengan sensasi dingin. Formulanya mengandung mineral-clay dan micro-beads untuk bantu bersihkan minyak berlebih secara alami. Wajah terlihat bersih, lebih cerah, dan tidak kusam. Cocok untuk kulit normal cenderung berminyak.Garnier Men Oil Control 3-in-1 Charcoal Foam Cleanser adalah pembersih wajah khusus pria. Produk ini memiliki tiga fungsi pembersih wajah dalam satu produk: sabun pembersih wajah;scrub; dan masker. Diperkaya dengan gabungan kekuatan charcoal, beads, dan clay agar wajah tampak bersih dan segar. Cocok untuk kulit normal cenderung berminyak & kusam",
+    },
+    {
+      id: 49,
+      name: "Garnier Pure Active Anti-Acne White Foam Facial Cleanser - 100 ml",
+      brand: "Garnier",
+      price: 29800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/15/5f89e951-c51f-4d6f-a2ed-29a9e5c18ee3.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Garnier Pure Active Anti-Acne White Foam Facial Cleanser Pembersih wajah yang mengandung bahan anti bakteri dan ekstrak blueberry alami yang bantu lawan 12 masalah kulit yang disebabkan oleh jerawat dan minyak; jerawat, bekas jerawat, minyak berlebih, warna kulit tidak rata, kekusaman, kulit agak gelap, efek paparan sinar UV, bintik hitam, kulit tidak halus, pori besar, pori tersumbat, dan komedo.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 50,
+      name: "Gatsby Cooling Face Wash Oil Clear Solution Series - 100gr",
+      brand: "Gatsby",
+      price: 27600,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/11/13/2ecb4f46-4b08-4cae-9bc9-1c58663ad21d.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "produk pencuci wajah dengan kombinasi kandungan Lemon dan rasa dingin untuk melawan minyak berlebih di wajah yang menjadi pemicu penyebab banyak masalah di kulit wajah pria seperti jerawat, kusam, komedo, dan lengket akibat minyak berlebih.Oil Control : Melawan minyak berlebih di wajah untuk kulit tampak tidak kusam dan mengkilap.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 51,
+      name: "Ginza Mousse Cleanser Series | Hyaluronic | Acne Care | Brightening",
+      brand: "Ginza",
+      price: 31000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/2/22/fb66155b-9165-4d8e-a62c-5ad763c29390.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Ginza Advanced Hyaluronic Mousse Cleanser 110mlMembersihkan hingga ke dalam pori-poriMenghidrasi kulitAnti inflamasiMeningkatkan produksi kolagenGinza Daily Brightening Mousse Cleanser 110mlMencerahkan kulitMenyamarkan flek hitamMenjaga kelembaban kulitMencegah kulit iritasi dengan busa yang lembutGinza Daily Acne Care Mousse Cleanser 110mlMengekfoliasi sel kulit matiMerawat kulit berjerawatMenjaga elastisitas kulitTidak menyebabkan iritasiGinza Gentle Exfoliating Mousse Cleanser 110mlMengeksfoliasi kulit secara ringanCepat meregenerasi kulitCocok untuk semua jenis kulitMenjaga kelembaban kulit & tidak menyebabkan iritasi",
+    },
+    {
+      id: 52,
+      name: "Glad2Glow Blueberry Ceramide Low pH Gel Cleanser",
+      brand: "Glad2Glow",
+      price: 42550,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/6f24f4d57ae346ddbd80643cd6ff75f2~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Glad2Glow Blueberry Ceramide Low pH Gel Cleanser 70mlPembersih wajah dengan pH rendah (5.5~6) yang mendekati pH kulit, terasa lembut untuk kulit dan skin barrier. Mengandung Ceramide dan Centella Asiatica, menjaga kelembaban kulit serta membantu mengontrol minyak berlebih pada wajah. Dengan tekstur gel, menghasilkan busa yang halus dan lembut, membersihkan kulit wajah sekaligus melembabkan.Manfaat:Membersihkan kotoran dan minyak tanpa rasa kering tertarik pH level 5.5 yang nyaman untuk skin barrierMembuat kulit terasa bersih dan segar",
+    },
+    {
+      id: 53,
+      name: "Glad2Glow Centella Salicylic Acid Acne Gel Cleanser",
+      brand: "Glad2Glow",
+      price: 41975,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/b0b73494190f4f36aa786b591b9ab2e3~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Glad2Glow Centella Salicylic Acid Acne Gel Cleanser 70mlCleanser dengan tekstur gel yang diformulasikan khusus untuk kulit berjerawat yang dapat membersihkan debu, kotoran, minyak dan bakteri penyebab jerawat yang dilengkapi dengan kandungan centella asiatica dan encapsulated salicylic acid yang berguna untuk menenangkan kulit berjerawat serta dapat menjaga skin barrier kulit dan menyeimbangkan mikrobioma kulit untuk mencegah timbulnya jerawat.",
+    },
+    {
+      id: 54,
+      name: "Glad2Glow Facial Wash Tremella Vita B5 Sensitive Calming Gel Cleanser 70 Ml",
+      brand: "Glad2Glow",
+      price: 41975,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/fa42f7269f7747d6b74decd8b6fe4eb8~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "GLAD2GLOW TREMELLA VITA B5 SENSITIVE CALMING GEL CLEANSERCleanser dengan tekstur gel yang diformulasikan khusus untuk kulit sensitif yang dapat membersihkan debu, kotoran, dan minyak yang dilengkapi dengan kandungan Tremella dan Vitamin B5 yang berguna untuk menenangkan kulit kemerahan serta dapat menjaga skin barrier kulit dan memenuhi kebutuhan nutrisi kulit.Manfaat:● Membersihkan kulit dengan lembut tanpa rasa tertarik● Menutrisi dan menjaga kadar kelembapan kulit● Menenangkan kemerahan pada kulit",
+    },
+    {
+      id: 55,
+      name: "Glad2Glow Milk Amino Acid Gentle Cleanser Brightening Face Wash 80ml",
+      brand: "Glad2Glow",
+      price: 45080,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/f34d14eb497a49e894bcd982a0f7c69b~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Glad2Glow Milk Amino Acid Gentle CleanserPembersih wajah dengan tekstur lembut dan foam yang kaya, membersihkan dengan mendalam tanpa meninggalkan residu. Mengandung Amino Acid dan Milk, menjaga kulit tetap lembab dan merawat skin barrier, serta membuat kulit bersih dan cerah. Kemasan pump dengan botol slim yang mudah disimpan dan dibawa, lebih higienis. Dapat digunakan pagi dan malam hari, serta nyaman untuk semua jenis kulit.Ukuran: 80 mlNo BPOM: NA11231200916Manfaat:Membersihkan kotoran dan makeup sehari-hariKulit terasa lembab dan halusKemasan pump slim yang mudah digunakanMembuat kulit bersih dan cerah",
+    },
+    {
+      id: 56,
+      name: "Glow & Lovely Bright C Glow Facial Foam - Series",
+      brand: "Glow & Lovely",
+      price: 29555,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/2/18/f4c72f76-6760-4e3a-b0bf-df734345cc9d.jpg',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Face wash ini mengandung Vitamin C Essence Complex yang dapat mencerahkan dan menutrisi hingga ke dalam 20 lapisan kulit. Diperkaya dengan kekuatan 100% natural ekstrak lemon untuk wajah lebih glowing dan terasa kenyal. Sabun pembersih muka ini juga mengandung 100x Anti-Oksidan yang dapat membersihkan wajah secara menyeluruh dari kotoran, debu dan kuman.Manfaat dari sabun wajah Glow & Lovely Bright C Glow:- Wajah Glowing- Bersih Cerah Seketika- Menutrisi dari dalam- Menjaga Kesehatan Kulit- Mengurangi Noda HitamGlow & Lovely Bright C Facial Foam diformulasikan khusus untuk semua jenis kulit. Untuk hasil yang lebih maksimal, gunakan krim pencerah wajah Glow & Lovely Multivitamin Cream setelah mencuci muka dan Glow & Lovely Bright C Sheet mask pada malam hari. Gunakan sabun cuci muka dan krim pencerah dua kali sehari pada pagi dan malam hari.Cara pemakaian: Sabun pencuci muka ini dapat digunakan dengan cara basahi wajah, keluarkan produk pada telapak tangan, usap hingga berbusa, dan pijat dengan lembut pada wajah lalu bilas. Tersedia dalam kemasan sachet 9gr, 50gr dan 100grFair & Lovely (kini Glow & Lovely) merupakan sebuah brand pelopor perawatan kulit wajah wanita yang telah berhasil menemukan dan mematenkan kekuatan dari vitamin B3 di tahun 1975. Kandungan Vitamin B3 inilah yang dapat membatasi penyebaran melanin di dalam kulit sehingga mampu menghasilkan kulit yang lebih cerah merata.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 57,
+      name: "Glow & Lovely Bright C Glow Facial Foam Vitamin C Sachet 8 Gr",
+      brand: "Glow & Lovely",
+      price: 3015,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/2/18/bcff1c33-c274-4c6f-8568-1c563fe96b7c.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "fair & Lovely Bright C Glow Facial Foam mempersembahkan Bright C Glow Facial Foam yang mengandung 5x Vitamin C Essence Complex yang mencerahkan dan menutrisi hingga ke dalam 20 lapisan kulit. Diperkaya dengan kekuatan 100% natural ekstrak lemon untuk wajah glowing dan terasa kenyal. Facial Foam ini juga mengandung 100x Anti-Oksidan untuk membersihkan wajah secara menyeluruh dari kotoran, debu dan kuman.Manfaat :~ Membersihkan wajah secara menyeluruh.~ Mengurangi noda hitam pada wajah.~ Menjaga kesehatan kulit wajah.~ Menjadikan wajah tampak lebih glowing.Keunggulan :Diformulasikan secara khusus untuk dapat digunakan oleh semua jenis kulit.Pemakaian :#Keluarkan secukupnya pada tangan beri sedikit air.#Usapkan pada wajah hingga berbusa sembari dipijat dengan lembut.#Untuk hasil terbaik, gunakan Fair & Lovely Bright C Glow Facial Foam 2x sehari dan gunakan Fair & Lovely Multivitamin Cream sesudahnya untuk melembapkan    untuk wajah Glowing yang Sehat.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 58,
+      name: "Glow & Lovely Derma Glow Facial Wash - Series",
+      brand: "Glow & Lovely",
+      price: 29670,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/2/18/38d188da-c790-4144-b4ed-04e3d1ec64d8.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "  Sabun pembersih wajah Glow & Lovely Multivitamin diformulasikan khusus untuk mencerahkan wajah yang tampak kusam  Sabun cuci muka wanita Glow & Lovely mengandung Multivitamin dan antioksidan untuk membantu membersihkan wajah dan mengangkat kotoran secara lembut  Glow & Lovely Multivitamin Facial Wash mengurangi noda hitam pada wajah  Hilangkan noda bekas jerawat dengan sabun muka wanita Glow & Lovely Multivitamin yang mengandung Niacinamide  Glow & Lovely Multivitamin Facial Wash harian untuk wajah terasa lebih lembut dan halus  Dapatkan wajah lebih bersih dan sehat dengan kandungan vitamin B, C, dan E dari sabun muka glowing ini - BPOM NA18201203964Glow & Lovely Multivitamin Facial Wash - merupakan sabun cuci muka terpercaya yang siap membantu mencerahkan wajah Anda. Facial Foam dari Glow & Lovely busanya kaya akan kandungan Multivitamin dan antioksidan sehingga membantu mengangkat kotoran di wajah secara lembut dan membuat wajah lebih cerah glowing.Sabun pembersih wajah ini cocok digunakan untuk semua jenis kulit dan sudah tersertifikasi Halal. Dapatkan wajah lebih bersih cerah dengan sabun muka glowing ini! Untuk hasil terbaik, gunakan beserta krim pencerah Glow & Lovely Multivitamin. Gunakan sabun cuci muka Glow & Lovely dua kali sehari pada pagi dan sore hari untuk hasil terbaik.Cara pemakaian Glow & Lovely Multivitamin Facial Wash juga sangat mudah. Pertama, basahi wajah, keluarkan produk pada telapak tangan dan usap hingga berbusa. Pijat dengan lembut lalu bilas.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 59,
+      name: "Hadalabo Shirojyun Ultimate Series Moist Facial Wash | Whitening Milk",
+      brand: "Hadalabo",
+      price: 25100,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/7/7/d3c7d854-769e-4459-bef1-d5c8699d0eba.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "1. Hadalabo Shirojyun Ultimate Whitening Face Wash 50g/100gMengangkat kotoran dan minyak dari kulit sekaligus mencerahkan.Diperkaya dengan Arbutin dan whitening Extract untuk efek pencerah ganda.Membantu membuat warna kulit lebih merata sehingga terlihat lebih cerah.Mengandung Hyaluronic Acid untuk meningkatkan kelembaban secara intensif sehingga kulit terasa tetap elastis.2. Hada Labo Shirojyun Whitening Lotion 100mlMengandung Arbutin untuk menyamarkan flek hitam dan mencerahkan kulit, membuat kulit terlihat lebih jernih dan cerah.Mengandung Vit C sebagai penangkal radikal bebas yang melindungi kulit dari akumulasi kerusakan akibat sinar matahari seperti flek hitam dan garis-garis penuaan pada kulit sehingga membuat kulit tampak tetap muda.Mengandung Hyaluronic Acid untuk kulit lebih lembab, kulit akan terasa tetap elastis.3. Hada Labo Shirojyun Whitening Milk 100ml1. Hight Purity Arbutin :Ekstrak dari tanaman bearberry yang mencerahkan warna kulit dan menyamarkan noda hitam.2. Vitamin C :Berfungsi sebagai antioksidan yang mampu menangkal efek radikal bebas sinar UV matahari.3. Hyaluronic Acid:Melembabkan dan melembutkan kulit. - 1 gram hyaluronic acid mampu menahan hingga 6 liter air. Dua manfaat dalam satu produk, melembabkan serta mencerahkan warna kulit. Berfungsi sebagai pelembab Tidak menggunakan zat pewangi, pewarna dan alkohol. Sesuai dengan pH kulit dan tingkat iritasi rendah.Gunakan setelah menggun Hada Labo Whitening lotion4. Hada Labo Shirojyun Ultimate Whitening EssenceSerum pencerah kulit intensif yang mengandung Arbutin konsentrasi tinggi untuk menyamarkan flak hitam dan membuat kulit terlihat lebih cerah.Mengandung vitamin C sebagai whitening agent dan antioxidant untuk membantu menjaga rona alami wajah sehingga wama kulit terlihat lebih merata dan cerah berseri. ",
+    },
+    {
+      id: 60,
+      name: "Hadalabo Tamagohada Face Wash | Peeling Lotion",
+      brand: "Hadalabo",
+      price: 30600,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/7/7/1fedcde8-8666-448c-995d-e4b8729cd425.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Mengandung AHA/BHA, memperbaiki kulit kusam dan merawat tekstur kulit sehinggatedihat lebih lembut dan cerah.Hada Labo Tamagohada Mild Peeling Lotion. Exfoliator yang berbentuk toner ini mengklaim bahwa kandungan lotion didalamnya lebih ''mild'', sehingga tidak sekeras produk acid toner lainnya. Hadir dalam kemasan 100 ml, membuat Hada Labo Tamagohada Mild Peeling Lotion cukup mudah untuk dibawa kemana-mana.Produk lotion ini mengandung Gluconolactone (PHA) dan Tranexamic Acid (TXA) yang membantu untuk menghilangkan lapisan kulit mati sehingga membuat kulit wajah terasa lembut dan halus. Karena kandungannya yang lembut, Hada Labo Tamagohada Mild Peeling Lotion mengklaim bahwa lotionnya memiliki tingkat iritasi yang rendah dan membantu untuk mencerahkan kulit wajah.",
+    },
+    {
+      id: 61,
+      name: "Herborist Facial Foam 80Gr Tea Tree=24",
+      brand: "Herborist",
+      price: 25254,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/3/7/0739a18e-e838-451d-9a7e-e14f3e0ec304.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun wajah Herborist Tea Tree Anti Acne adalah sabun wajah utk membantu membersihkan dan mengontrol minyak berlebihan pada wajah. kandungan ekstrak tea tree membantu menghambat pertumbuhan bakteri P Acne penyebab jerawat, serta merawat kulit wajah yang berjerawat. Diperkaya dgn Brightening Extract, sabun wajah Herborist Tea Tree Anti Acne membuat wajah tampak lebih cerah.Car PakaiTuang facial foam secukupnya ke telapak tangan, gosok hingga berbusa lalu pijatkan perlahan ke kulit wajah. Bilas hingga bersihCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 62,
+      name: "Herborist Facial Foam Zaitun 80 gr",
+      brand: "Herborist",
+      price: 25254,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/2/11/f88f7c37-6bd8-473d-ab7c-33961359421d.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pembersih wajah untuk kulit normal dan kering. Sabun wajah herborist denganformulasi lembut dan mengandung minyak zaitun sebagai anti oksidan alami yangmembersihkan sekaligus menjaga kehalusan dan kelembutan kulit wajahCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 63,
+      name: "Herborist Facial Wash Gel Aloe vera 80Gr",
+      brand: "Herborist",
+      price: 25254,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/hDjmkQ/2021/12/17/b4acdc93-8db7-477e-89e7-85a02e2d4567.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Herborist Facial Wash Gel Aloe vera 80GrRasakan sensasi sejuk Aloe Vera dan keharuman alami yang menyegarkan di setiap penggunaan. Dengan tekstur gel yang lembut, membantu membersihkan kulit wajah dari debu dan kotoran secara mendalam.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 64,
+      name: "Herborist Facial Wash Rose 80Gr",
+      brand: "Herborist",
+      price: 25254,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/12/19/8773156b-65c2-4118-9c64-d13d4c9cb550.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Herborist Rose Facial Wash Gel adalah sabun wajah dengan ekstrak Bunga Mawar berfungsi untuk membersihkan, menjada elastisitas dan kelembapan kulit wajah, sehingga membantu memperlambat tanda-tanda penuaan dini. Mengandung ekstrak brightening yang membuat wajah lebih cerah. Sesuai untuk semua jenis kulit, termasuk kulit sensitif.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 65,
+      name: "Kahf Face Wash Acne and Pore Cleanse Scrub 100ml - Cleanser Wajah",
+      brand: "Kahf Face",
+      price: 46575,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/06679166ce6e43f984b6362d5018848a~.jpeg',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Kahf Face Wash Acne and Pore Cleanse ScrubSabun cuci muka khusus pria mengandung ultra spherical yang dapat membersihkan permukaan kulit dari bakteri penyebab jerawat hingga lapisan terdalam, Cica+ Complex mampu melawan bakteri penyebab jerawat Hydro balance Technology dapat meningkatkan kelembaban kulit untuk memperkuat skin Barier dan menghalangi jerawat datang kembali. Keunggulan:Membuat kulit terasa lembap dan halus Membersihkan kulit dari kotoran hingga ke pori-pori Scrub yang aman dipakai setiap hari untuk wajah berjerawat. Formula yang mild dan cocok untuk semua jenis kulitTidak menimbulkan komedo dan jerawat 6. Teruji secara klinis ",
+    },
+    {
+      id: 66,
+      name: "Kahf Face Wash Series 100ml - Sabun Wajah Pria",
+      brand: "Kahf Face",
+      price: 46575,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/72b00698365a4d11b16b9a28260ebb37~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Kahf Face WashSabun cuci muka pria yang diformulasikan secara mild mampu membersihkan wajah hingga ke pori tanpa membuat kulit kering. Lindungi harimu dari wajah berminyak dan berjerawat.Kahf Oil and Acne Care Face Wash merupakan sabun pembersih wajah yang menjadikan wajah bersih dan lembap secara menyeluruh.Kahf Triple Action Oil and Comedo Defense pembersih wajah yang bekerja dengan triple action face wash, mask, dan mild peeling solution,menyerap minyak secara intensif dari kulit tanpa menghilangkan kelembapannya.Kahf Skin Energizing and Brightening Face Wash merupakan sabun pembersih wajah yang dapat menjadikan kulit wajah bersih dan lembap secara menyeluruh hingga ke pori-pori.",
+    },
+    {
+      id: 67,
+      name: "Kahf Face Wash Series 50ml Oil Acne Care | Energi & bright",
+      brand: "Kahf Face",
+      price: 30475,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/7038b7db762347c8ac62a1e589c23293~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Kahf Skin Energizing and Brightening Face Wash 50 mlSabun cuci muka khusus pria mengandung ekstrak Moroccan Mint dan Mediterranean Grapefruit yang membantu menyegarkan wajah hingga 6 jam dan membuat wajah tampak lebih cerah. Mampu membersihkan kulit hingga ke pori-pori tanpa membuat kulit kehilangan kelembapan alaminya.Kahf Oil and Acne Care Face Wash 50 mlSabun cuci muka khusus pria yang membantu mengurangi minyak berlebih pada wajah selama 12 jam serta mengurangi kulit berjerawat. Mampu membersihkan kulit hingga ke pori-pori tanpa membuat kulit kehilangan kelembapan alaminya.",
+    },
+    {
+      id: 68,
+      name: "Lavojoy Solve It Now Body Wash Improve Rough Skin 300 Ml",
+      brand: "Lavojoy",
+      price: 50600,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/6dff53f6643a4c499f081b041bbc084d~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "lavojoy Solve It Now Body WashSabun cair amino acid yang diperkaya dengan AHA, BHA dan PCA Zinc untuk menenangkan, menghaluskan kulit dan mengatasi permasalahan jerawat punggung. Rangkaian "Solve It Now" menjanjikan solusi yang cepat dan efektif untuk meningkatkan tekstur kulit Anda. Powerhouse combination dari Solve It Now Body Wash dan Solve It Now Body Serum, masing-masing dibuat dengan cermat untuk meningkatkan radiance alami kulit Anda dan membuat Anda mendapatkan kulit yang tervitalisasi dan lembut.Manfaat:1. Gentle Cleansingdiperkaya dengan Zinc PCA, AHA, dan BHA, memberikan pengalaman pengelupasan kulit yang lembut untuk membersihkan dan menjaga kesehatan dan kemurnian kulit Anda.2. CalmingDiperkaya dengan 4D Hyaluronic Acid, Papain, Olive Extract, dan Bamboo Extract yang melembapkan dan menenangkan kulit.3. Nourishing and HydratingDiperkaya dengan Vitamin E, Ekstrak Purslane, dan Ekstrak Gentian, produk ini bekerja secara harmonis untuk menutrisi dan menghidrasi kulit Anda, memastikan kulit Anda tetap lembut dan halus.",
+    },
+    {
+      id: 69,
+      name: "Marcks Teens Face Wash Acne Expert - 50 Gr",
+      brand: "Marcks",
+      price: 15800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/1/30/c658a543-27b4-4ab7-b3b9-405ad4f39755.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun pembersih berbentuk foam, yang membersihkan segala kotoran debu atau sisa makeup yang menempel di wajah. Face wash ini juga memiliki kandungan Tea Tree  amp; Green Tea untuk basmi jerawat dengan mengurangi minyak berlebih pada kulit wajah, Witch Hazel  amp; Chamomille Extract untuk menjaga kelembapan dengan nutrisi pada kulit yang sedang berjerawat, dan diperkaya vitamin B3 untuk mencerahkan dan menyamarkan noda bekas jerawat.  CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 70,
+      name: "Marina Facial Foam Expert White & Glow Series - 100 Ml",
+      brand: "Marina",
+      price: 15800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/7/24/730b09a9-af27-450e-9d5c-40ec9865ac41.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Gel Facial Foam dengan busa lembut, membersihkan wajah menyeluruh dari kotoran dan minyak hingga ke pori dan tetap menjaga kelembapan alami kulit. Dengan Advanced Clearing Formula membantu mengontrol minyak berlebih juga mengurangi timbulnya jerawat, menenangkan kulit, dan merawat kulit tetap glowing. Dan dilengkapi dengan:- Duo-Expert Nia-Ceramide (Niacinamide & Ceramide) yang menjaga fungsi barrier kulit, cerah & lembab- Mugwort Extract membantu melawan bakteri penyebab jerawat dan menenangkan kulit.- Antibacterial formula yang teruji 99,9% efektif melawan bakteri penyebab jerawat dan mengurangi timbulnya jerawat- No Tightness membersihkan tanpa menghilangkan kelembapan alami kulit. pH balance.- 0% Alkohol & ParabenCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 71,
+      name: "Morris Men Care Face Wash Series - 100 gr",
+      brand: "Morris",
+      price: 33810,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/27/b53e2591-a30e-4046-ac39-c911d8ff16e0.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Morris Men’s Care Face and Beard Wash berfungsi sebagai Cleanser Action yang mampu membersihkan kulit wajah dari kotoran, minyak berlebih, polusi, dan debu baik sebelum dan sesudah beraktivitas. Diperkaya dengan Salicylic Acid, Potassium Azeloyl Diglycinate, Bamboo Charcoal Powder, dan Niacinamide kombinasi yang mampu membantu mengontrol minyak belerbih pada kulit wajah, merawat kulit berjerawat, dan mencerahkan kulit wajah.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 72,
+      name: "Mustika Ratu Anti Polution Face Wash Bamboo Charcoal 100 gr",
+      brand: "Mustika",
+      price: 28000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/12/18/ba10ca8d-fc06-4836-ade9-cffaca6acb84.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Mustika Ratu Anti Polution Face Wash Bamboo Charcoal [100g]  merupakan pembersih wajah dengan kandungan ekstrak biji kelor yang tinggi akan antioksidan dan bamboo charcoal yang dapat membersihkan kulit dari polusi, mengurangi minyak berlebih serta membersihkan kulit wajah seketika.  CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 73,
+      name: "Mustika Ratu Facial Wash Brightening Bengkoang - Series",
+      brand: "Mustika",
+      price: 35765,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/9/21/d001930a-aa1a-4788-9e7f-55fdcfda13fb.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Mustika Ratu Brightening Bengkoang Facial Wash SeriesIni dia sabun pembersih wajah eksklusif dari Mustika Ratu! [Mustika Ratu] Brightening Bengkoang Facial Wash dapat menghaluskan kulit serta membuat kulit tampak lebih cerah dengan scrub yang halus dan busa yang lembut.Cara penggunaan : Tuangkan ke telapak tangan, basahi dengan air hingga berbusa. Usap dengan pijatan lembut pada wajah lalu bilas dengan air. Hindari daerah sekitar mata. Gunakan setiap hari.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 74,
+      name: "Mustika Ratu Pembersih Sari Mawar Merah 150 ml",
+      brand: "Mustika",
+      price: 25645,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/4/c22e4e3b-cb97-42bb-b4c0-1a9ad1ed3ee5.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "- Pembersih wajah- Memiliki kandungan ekstrak air mawar merah- Untuk membersihkan wajah dari kotoran dan sisa make-up- Mengandung antiseptik- Membantu mencegah timbulnya jerawat- Mampu mengatasi kulit kering pada wajah- Diperkaya dengan kandungan Vitamin E- Mampu mengembalikan kelembaban kulit wajah- Memberikan relaksasi yang menyegarkanCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 75,
+      name: "Mustika Ratu Sari Ketimun Cleanser Wajah 150 ml",
+      brand: "Mustika",
+      price: 25645,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/4/ff7524bf-3f24-4c98-8779-9b32b0f54833.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Mustika Ratu Sari Ketimun Cleanser Wajah 150 mlmerupakan pembersih wajah dengan kandungan Ekstrak Cucumber (sebagai freshener) dan vitamin E (sebagai antioksidan). Membersihkan wajah dan leher dari debu dan sisa kosmetik. Untuk kulit normal/kering.Cara Pemakaian :    Letakkan pembersih di 5 bagian muka, yaitu dahi, pipi kiri, pipi kanan, hidung dan dagu.    Lakukan gerakan melingkar ke seluruh wajah hingga kosmetik atau kotoran benar-benar larut bersama pembersih.    Bersihkan dengan menggunakan kapas atau waslap ke arah atas.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 76,
+      name: "Natur HG For Men Facial Wash Acne Care & Oil Control *100 ml",
+      brand: "Natur HG",
+      price: 41400,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/31/bf87e9c8-3138-48f2-9d54-e561e2b2ced0.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "HG For Men Super Facial Wash, merupakan pembersih wajah yang dapat membersihkan wajah secara efektif. Diformulasikan khusus untuk semua jenis kulit pria. Mengandung charcoal yang mampu membersihkan & mengurangi kadar minyak berlebih pada wajah, Asam Amino dan Allantoin yang membantu menutrisi & melembapkan kulit wajah, serta menthol yang dapat menyegarkan kulit wajah.Telah teruji klinis aman di gunakan semua jenis kulit sehingga dapat meningkatkan rasa percaya diri konsumen sepanjang hari.Netto 100mlCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 77,
+      name: "Nivea Men Facial Foam Acne Oil Clear Acne Defense 100mL",
+      brand: "Nivea",
+      price: 43585,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/3/7288dcc1-4323-4ba1-8e74-af7f3a4171d7.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Pembersih wajah untuk pria, merawat kulit berjerawat dengan cara melawan bakteri dikulit wajah. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 78,
+      name: "Nivea Men Facial Foam Extra White Dark Spot 100Ml",
+      brand: "Nivea",
+      price: 37000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/3/03365c07-f235-4d77-9c4c-dc94d40118fc.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Nivea men facial foam whitening oil control cooling mud tube 100mL CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 79,
+      name: "Nivea Men White Oil Clear Anti-Shine Foam 100 Ml",
+      brand: "Nivea",
+      price: 43470,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/22/a6706322-d31f-47d9-8701-98b1b6e4c5e5.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Nivea Men White Oil Clear Anti-Shine Foam 100 MlDengan Carnitine Power yang efektif mengontrol produksi minyak berlebih, Active Charcoal yang bekerja seperti magnet membantu proses detox wajah, dan kandungan Menthol yang memberikan sensasi extra segar setelah bercuci muka sehingga wajah cerah, bebas minyak, dan bersih maksimal. Cocok digunakan sehari-hari & untuk semua jenis kulit terutama untuk pria dengan wajah mudah berminyak & sering terpapar debu, kotoran, & sinar matahari. Telah diuji secara dermatologi cocok untuk kulit. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 80,
+      name: "Nivea Spark Wht Foam 100Ml",
+      brand: "Nivea",
+      price: 37030,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/22/1bd48c4b-cabb-4de6-8aa3-6eecd4b2a562.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Efektif membersihkan dan mencerahkan kulit wajah dari debu, polusi, dan kotoran.Kombinasi Rucinol, Licorice dan Vitamin C mencegah terbentuknya melanin penyebab kulit kusam.Mampu menyamarkan noda hitam pada wajah.Cocok digunakan sehari-hari, untuk segala jenis kulit.Teruji secara dermatologis.Informasi penting!!Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 81,
+      name: "Npure Marigold Deep Cleanse Facial Wash 100ml",
+      brand: "Npure",
+      price: 73312,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/10/50367af2-c91e-4d50-8290-c97c8cece56e.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Npure Marigold Deep Cleanse Facial Wash 100mlPembersih muka tanpa SLS untuk kulit tampak lebih muda, dengan busa lembut yang memiliki kandungan Ekstrak Marigold dan 8X Essential Vitamins yang dapat membersihkan kulit dari polusi debu dan kotoran. Diperkaya dengan 5X Peptides, Adenosine, dan Gold untuk membantu merawat kulit agar tampak segar. Pertahankan keremajaan kulitmu dengan rangkaian Marigold lainnya. Keunggulan : Untuk semua jenis kulit, terutama mencegah penuaan diniDapat digunakan mulai usia 14 tahun, aman digunakan untuk Ibu Hamil dan Ibu MenyusuiFormula pH balance / sesuai dengan pH kulitCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).a ada editing)",
+    },
+    {
+      id: 82,
+      name: "Nuface Facial Wash Acne Prone Care 80gr - Pembersih Wajah Untuk Kulit Berjerawat Cleanser",
+      brand: "Nuface",
+      price: 22977,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/70cdc44f8acf4644b727ec2aee0e3a4f~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Nuface Nu Glow Liquid Acne Prone Care Facial Wash Gel 80grActive Ingredients: Salicylic Acid,, Neem Extract, Niacinamide, Centella Extract, Allantoin, Aloe VeraFungsi:Membersihkan wajahMerawat wajah berjerawatMencerahkanMenenangkan wajah berjerawatMelembapkanCara pemakaian :Basahi wajahAplikasikan Nu Glow Facial Wash pada wajah & leherPijat lembut pada wajah dengan gerakan memutarBilas hingga bersih & keringkan wajah dengan handuk bersihCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 83,
+      name: "Nuface Facial Wash Brighten & Supple Skin 80gr",
+      brand: "Nuface",
+      price: 22977,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/21f3571245f94009b811c4f477eddc4c~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Nuface Facial Wash Brighten & Supple Skin dengan Active Ingredients: Niacinamide, Vitamin C, Licorice Extract, Advanced HyaluronateFungsi :Mencerahkan kulit wajahMenyamarkan flek hitam bekas jerawatMengurangi peradangan & kemerahan pada wajahMelembabkan kulit wajahAman digunakan untuk kulit normal dan kering, Ibu Hamil, Ibu Menyusui, Pria maupun Wanita sejak usia 13 tahun.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 84,
+      name: "Nuface Facial Wash Hydra Lock & Youthful Skin 80gr",
+      brand: "Nuface",
+      price: 25979,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/699c8223ba724b778d935fda5100abf0~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "  Nuface Nu Glow Hydra Lock & Youthful Facial Wash Gel 80Active Ingredients: Bakuchiol, Advanced Hyaluronate, Vit C, Niacinamide, dllFungsi:Mengatasi Kerutan halus di wajahMenjaga elastisitas kulit wajahMembersihkan & Melembapkan wajahMencerahkan & menyamarkan hyperpigmentasiCara Pakai :Bersihkan Wajah dengan Hydra Lock & Youthful Skin Facial Wash setiap pagi & malamGerakan jari memutar di area wajah agar kotoran dan residu sisa make up terangkatBilas menggunakan air bersihCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 85,
+      name: "Nuface Nu Glow Men Facial Wash 100 Gr - Series",
+      brand: "Nuface",
+      price: 31878,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/a80e8eb2ed5f46cfa9f2fb6644f35bef~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Nuface Nu Glow Men 100grHadir untuk menjawab kebutuhan akan produk Facial Wash yang mampu mengatasi permasalahan Kulit khusus pria seperti kondisi kulit berminyak, kusam, komedo, dll serta untuk melengkapi produk Nu Glow Men Serum yang sudah terlebih dahulu diluncurkan ke marketCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 86,
+      name: "Ovale Facial Lotion 100 mL - Lemon | Papaya | Anti Acne | Whitening",
+      brand: "Ovale",
+      price: 16650,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/6/3/959bc149-d3bc-45f6-a1c2-489a660ab877.jpg',
+      isNew: true,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "OVALE FACIAL LOTION Pembersih wajah satu langkah dengan kandungan Aloe Vera , Vitamin A & E.VARIAN: Bengkoang Untuk membantu mencerahkan kulit wajah.Lemon Untuk kulit wajah yg cenderung berminyak dan berjerawat.Anti Acne Ekstrak jeruk nipis dan tea tree oil membantu merawat kulit yang berjerawat.Extra Mild Untuk kulit yang cenderung sensitif , dengan Ekstrak Chamomile sebagai anti inflamasi.Whitening Papaya Dengan ekstrak pepaya membantu mencerahkan kulit wajah",
+    },
+    {
+      id: 87,
+      name: "Ovale Facial Lotion 60 mL - Lemon | Papaya | Anti Acne | Whitening",
+      brand: "Ovale",
+      price: 9900,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/6/3/6b9cd4db-5667-4748-9ac6-5ef4bf824f99.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "- Ovale Facial Lotion LemonUntuk Kulit wajah yang cenderung berminyak dan berjerawat. Diperkaya Ekstrak Lemon, Vit A , E dan Aloe Vera.- Ovale Facial Lotion PapayaUntuk kulit wajah yang kusam. Diperkaya Ekstrak Pepaya, Vit A, E dan Aloe Vera.- Ovale Facial Lotion Anti AcneUntuk kulit berjerawat. Diperkaya Ekstrak Jeruk Nipis, Tea Tree Oil, Vit A, E dan Aloe Vera.",
+    },
+    {
+      id: 88,
+      name: "Oxy Acne Cleanser Facial Wash Multi Action - 50 Gram",
+      brand: "Oxy",
+      price: 20500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/5/15/048beaf1-7e45-4fa4-bb7f-c4b48843bd20.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "For Oily  amp; Acne Prone Skin With Multi 6 Action :  Membantu mengurangi jerawat, membantu membersihkan kotoran di pori-pori kulit dan mengangkat sel-sel kulit mati, membantu mengurangi minyak berlebih pada wajah yang menyebabkan jerawat , mengandung vitamin E yang membantu melembabkan kulit wajah , bisabolol yang membantu menenangkan wajah yang berjerawat. mengandung vitamin C yang membantu mencerahkan bekas jerawat pada wajah.   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 89,
+      name: "Pigeon Facial Foam All Skin Types 100 ml",
+      brand: "Pigeon",
+      price: 21200,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/7/22/8a8fcbf8-ea68-48ff-8dcc-25462a793d9a.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun pembersih wajah dengan bahan alami yang lembut untuk membersihkan wajah dari debu, kotoran maupun sisa make-up. Mengandung Extrak Jojoba dan Chamomile yang dapat menjaga kelembaban kulit serta melindungi kulit dari iritasi ringan. Cocok dan aman untuk semua jenis kulit.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 90,
+      name: "Pigeon Teens Facial Foam Daily Mild Cleansing 40 ml",
+      brand: "Pigeon",
+      price: 13800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/7/24/68b4726c-fbc1-40ef-89ee-dfc74625c7db.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pigeon Teens Facial Foam Daily Mild Cleansing (For Normal to Dry Skin) diformulasikan khusus untuk kulit remaja yang normal ataupun kulit kering. Membersihkan wajah dari debu, kotoran dan sisa make up.  Diperkaya dengan : • Esktrak Jojoba membantu menjaga kelembapan kulit. • Esktrak Chamomile membantu melindungi kulit dari iritasi ringan.  CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 91,
+      name: "Pigeon Teens Facial Foam Series - Daily Mild | Deep Cleansing | Acne",
+      brand: "Pigeon",
+      price: 23500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/11/18/a1d94a81-aea5-4268-ba5a-074e79f4f683.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pigeon Teens Facial Foam Series* Acne Care : diformulasikan khusus untuk kulit remaja yang berjerawat. Membersihkan wajah dari debu, kotoran dan sisa make up.* Daily Mild Cleansing(For Normal to Dry Skin) diformulasikan khusus untuk kulit remaja yang normal ataupun kulit kering. Membersihkan wajah dari debu, kotoran dan sisa make up.* Deep Cleansing and Oil Control di formulasikan khusus untuk kulit remaja yang cenderung berminyak.Diperkaya dengan :*Ekstrak jojoba membantu menjaga kelembapan kulit *Ektrak Chamomile membantu melindungi kulit dari iritasi ringan*Charcol membantu menyerap minyak dan membersihkan hinga ke pori-poriMenjaga kulit agar tetap bersih, segar dan sehat terawat.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 92,
+      name: "Pixy Cleansing Express Anti Acne - 100 Ml",
+      brand: "Pixy",
+      price: 23287,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/11/22/a4254b3c-3250-4ed9-b891-0911d79fc507.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pixy Cleansing Express Anti Acne adalah Pembersih sekaligus penyegar bebas alkohol, lembut mengangkat seluruh kotoran dan sisa makeup pada wajah tanpa meninggalkan rasa lengket. Diperkaya dengan Salicylic Acid sebagai anti bakteri dan ekstrak kanzo yang membantu menyejukkan kulit berjerawat. Teruji klinis tidak memicu timbulnya komedo (non-comedogenic) dan jerawat (non-acnegenic)CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 93,
+      name: "Pixy Facial Foam Anti Acne Cleanser 100 gr",
+      brand: "Pixy",
+      price: 32603,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/9/9/60d05be5-fb5c-4e6a-8bd2-29130d684162.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Sabun wajah dengan tiga keistimewaan- Melindungi kulit dari bakteri penyebab jerawat,- Menyamarkan noda bekas jerawat sekaligus- Membuat warna kulit tampak lebih cerah,- Menyejukkan kulit wajah berjerawat.Teruji klinis tidak memicu timbulnya komedo (non-comedogenic) dan jerawat (non acnegenic). Sangat cocok digunakan untuk kulit wajah cenderung berjerawat.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 94,
+      name: "Pond's Age Miracle Hexyl-Retinol Facial Foam 100 Gr",
+      brand: "Pond's",
+      price: 66815,
+      originalPrice: 80178,
+      rating: 4.0,
+      reviews: 1000,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/3215b3b6ff754c0d9ed6095ff564f7e0~.jpeg',
+      isNew: true,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pond's Age Miracle Hexyl-Retinol Facial Foam 100 GrAnti aging facial cleanser pertama dari Pond's Age MiracleSabun cuci muka yang tidak hanya membersihkan kulit tetapi juga melawan tanda penuaan, bahkan yang belum terlihat sekalipun.Mengandung 10% Retinol - C dengan age defy properties yang selain dapat membersihkan kulit hingga ke pori secara lembut, juga dapat menjaga wajah agar anti keriput dengan menyamarkan garis halus.Mengandung Vitamin B3 Complex dengan 2X kekuatan krim pencerah dan anti wrinkle properties, yang dapat mengurangi kekusaman kulit dan menghaluskan tekstur kulit.Face wash ini juga dilengkapi scrub lembut yang dapat mengangkat sel kulit mati untuk 3X youthful glow, dengan pemakaian teraturSabun muka antiaging yang dapat merawat kulitmu secara menyeluruh dan bantu angkat sel kulit mati, untuk menjadikannya glowing dan lembut setiap saat",
+      tags: ['moisturizing', 'cleanser', 'face wash']
+    },
+    {
+      id: 95,
+      name: "Pond's Bright Miracle Ultimate Oil Control Facial Foam 100 Gr | 50 Gr",
+      brand: "Pond's",
+      price: 35880,
+      originalPrice: 43056,
+      rating: 4.1,
+      reviews: 1002,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/41c017badb72406ca9fe2dda22e20b3c~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "BARU POND'S Bright Miracle Ultimate Clarity Facial Foam yang mencerahkan & menutrisi wajah saat kamu membersihkan wajah.Sekarang diformulasikan dengan NIASORCINOLTM NIASORCINOLTM kombinasi dari:Niacinamide: 20%",
+      tags: ['moisturizing', 'cleanser', 'face wash']
+    },
+    {
+      id: 96,
+      name: "Pond's Men Facial Foam | Icy | Scrub Series - 50 gr",
+      brand: "Pond's",
+      price: 29325,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/4/11/04e51a8b-a1fe-492b-8b41-6a502378fc8f.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Pond’s Men Facial Foam & Scrub - Sabun Cuci Muka PriaSabun cuci muka pria dengan ginseng scrub dan vitamin B3. Pembersih wajah pria dengan kandungan white ginseng scrub dan anti-oksidan untuk membersihkan noda membandel, sel kulit mati dan polutan. Selain itu mampu membersihkan debu, kotoran, minyak berlebih.Sabun cuci muka yang menghilangkam noda hitam dengan vitamin B3 (Niacinamide) agar kulit wajah tampak lebih cerah merata.Sabun muka pria yang bisa digunakan setiap hari dan kapanpun.Sabun wajah pria dari Pond's Men yang mampu menyamarkan noda hitam dan mencerahkan wajah sejak pertama kali mencuci muka.Pembersih wajah brightening scrub pertama yang memberikan aksi ganda, menyamarkan noda hitam dan mencerahkan wajah.Cara Pakai:1) Gunakan setiap hari.2) Basahi wajah. Keluarkan sedikit di telapak tangan dan beri air hingga berbusa.3) Pijat wajah secara perlahan dan hindari area mata, kemudian bilas dengan air.Cara Penyimpanan:Simpan di tempat yang teduh dan jauhkan dari sinar atau panas matahari langsung.Jika terkena mata, segera bilas dengan air.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).Lihat Lebih Sedikit",
+    },
+    {
+      id: 97,
+      name: "Pond's Men Facial Foam Series 50 Gr | 100 Gr",
+      brand: "Pond's",
+      price: 29095,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/4eff662ed2f749afa894bba31dfc71d3~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Kekuatan dari Mineral Clay yang dapat menyerap minyak dan membantu mengendalikan kotoran , serta Salicylic Acid yang dikenal secara efektif mencegah jerawat membuat wajah tampak bersih dan berenergi.Keunggulan :- Dengan kandungan Mineral Clay & Salicylic Acid- Menyerap minyak- Bantu mengendalikan kotoran kulit- Mencegah jerawat- Wajah tampak bersih & berenergiTHYMO-T ESSENCEKandungan aktif AntiAcne dengan teknologi Lock & Clear yang telah dipatenkan melawan bakteri penyebab jerawat dan membantu menghilangkannya. Cara KerjaDiformulasikan dengan kandungan aktif AntiAcne Thymo-T Essence berteknologi Lock & Clear yang unik, Pond's Men Acne Solution membantu mengunci dan menghilangkan bakteri penyebab jerawat hingga ke akarnya, bahkan setelah mencuci muka. Kulit wajah tampak lebih bersih bebas jerawat.",
+    },
+    {
+      id: 98,
+      name: "Ren Baby Face Facial Cleanser 150 Ml Series | Pepaya |Cucumber | Avoca",
+      brand: "Ren",
+      price: 20000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/10/5/b96ac7f8-6c63-4e9c-ab3e-ff9305d3cf98.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Facial Cleanser+ Papaya Brightening Essence pembersih wajah dengan New Improved Formula secara efektif membantu membersihkan wajah dari kotoran penyebab komedo dan jerawat secara menyeluruh, dilengkapi dengan Papaya Brightening Essence yang membantu mencerahkan, melembabkan dan merawat kulit tetap sehat, menjadikan kulit terasa lebih halus dan cerah bersinar tanpa noda. Allantoin berfungsi untuk merangsang pertumbuhan sel kulit baru dan menjaga kelembaban kulit.REN Babyface Facial Cleanser Cucumber Essence cocok untuk kulit berminyak & berjerawat.  Bermanfaat merapatkan pori-pori dan meredakan peradangan kulit akibat jerawat. Membantu mengurangi jerawat dan mencerahkan kulit.Mengontrol Minyak berlebih. RDL BABY FACE CLEANSER Efektif menghilangkan kotoran dan minyak berlebih serta mencegah jerawat dan Extract melembabkan kulit anda sehingga terlihat halus, lembut dan kenyal.",
+    },
+    {
+      id: 99,
+      name: "Ren Papaya Brightening Soap Series 50 Gr | 135 Gr",
+      brand: "Ren",
+      price: 22195,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/15/e28c206b-0d09-4853-84cd-e009013b4e00.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Ren Papaya Brightening Soap 135gr Sabun kecantikkan untuk tubuh. Membersihkan kulit tubuh secara menyeluruh sekaligus mencerahkan dan melembabkan kulit.ManfaatMembersihkan kulit tubuh secara menyeluruh.Pemakaian    Basahi permukaan kulit.    Usapkan pada tubuh hingga berbusa.    Pijat lembut dengan gerakkan memutar.    Bilas hingga bersih.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 100,
+      name: "Scarlett Gentle Skin Cloud Facial Foam 105ml -  Series",
+      brand: "Scarlett",
+      price: 74750,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/11/30/42795e34-f31a-4090-afd2-11ee643dd003.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "New format experience on deep cleansing that having gentle formulations and gentle texture to treat acne-prone and dull skin. Delivering healthy and radiant brightening skin everyday without afraid of irritation.Terdiri dari :- Brightly Cloud Facial FoamTemukan keajaiban Brightly Cloud Facial Foam, pembersih wajah inovatif yang menggabungkan kekuatan Gluconolactone sebagai Mild Exfoliant yang dapat mengangkat kotoran dan sel kulit mati tanpa membuat kulit iritasi bahkan untuk kulit sensitif sekalipun, dengan Niacinamide & Korean Licorice Extract sebagai Dual Brightening Power Ingredients yang dapat mencerahkan kulit. Kedua ingredients ini diubah menjadi Cloud Foam Microbubble dengan membentuk busa yang sangat halus berukuran 0.001mm, memungkinkan busa dapat membersihkan kulit hingga ke pori-pori terdalam. Rasakan pengalaman mencuci muka yang rileks tanpa rasa ketarik untuk tampilan kulit yang lebih bersih, cerah, dan glowing.(NO BPOM: NA18241204867)- Acne Cloud Facial FoamRasakan kekuatan Acne Cloud Facial Foam! Mengandung BioStine Galasalate untuk membersihkan kotoran dan sebum hingga pori-pori terdalam tanpa iritasi dan Natural Anti Bacterial Complex (Mugwort Extract, Tea Tree Water, dan PureFix DC) untuk mengurangi bakteri penyebab jerawat. Kedua ingredients ini diubah menjadi Cloud Foam Microbubble dengan menghasilkan busa halus berukuran 0,001 mm, memastikan busanya dapat membersihkan secara mendalam. Rasakan pengalaman mencuci muka yang rileks tanpa rasa ketarik untuk kulit bersih, sehat, dan bebas jerawat!(NO BPOM: NA18241205081)Cara Pemakaian :- Gunakan pada pagi dan malam hari.- Ambil 2-3 pompa ke tangan- Pijat dengan gerakan memutar dan bilas dengan air- Untuk hasil yang optimal, lanjutkan step dengan SCARLETT Brightly/Acne Series",
+    },
+    {
+      id: 101,
+      name: "Scarlett Whitening Facial Wash Acne 100 ml",
+      brand: "Scarlett",
+      price: 63250,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/10/19/feab98c4-10de-4591-ad3b-34cef7783620.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Scarlett Whitening Facial Wash Acne bermanfaat untuk :- Membantu membersihkan wajah dari kotoran yang dapat menyumbat pori-pori- Mencerahkan noda bekas jerawat dan menjaga kelembapan wajah serta menenangkan kulit yang meradang- Melawan bakteri penyebab jerawat- Merawat kulit berjerawatCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 102,
+      name: "Scarlett Whitening Facial Wash Normal Skin",
+      brand: "Scarlett",
+      price: 63250,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/10/21/d7437a78-35c2-4473-a559-3b172054ba19.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Scarlett Whitening Facial Wash Normal SkinFacial Wash mengandung Glutathione, Vitamin E, Rose Petals, dan Aloe Vera yang sangat bagus untuk mencerahkan kulit wajah. menutrisi kulit wajah.mengontrol kadar minyak berlebih diwajah.mengecilkan pori-pori diwajah. sangat bagus untuk meregenerasi kulit wajah agar tampak lebih kencang. membantu menghilangkan beruntus/jerawat.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 103,
+      name: "Scora D-Panthenol Gentle Low pH Cleanser - 100ml",
+      brand: "Scora",
+      price: 50370,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/11/1/4489743b-6e94-4caf-830c-d73de895af5e.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "SCORA D-Panthenol Gentle Low pH Cleanser merupakan pembersih wajah dengan kandungan bahan D-Panthenol yang membantu membersihkan wajah sekaligus melembabkan dan menenangkan kemerahan dan iritasi di kulit wajah IngredientsD-Panthenol (0.6%) : Membantu melembabkan kulit secara intensif serta membantu meredakan kemerahan dan iritasi pada kulitAllantoin : Mengurangi kemerahan dan peradanganHymagic 4d : Gabungan empat jenis Hyaluronic Acid, membantu kulit lebih lembab dan terhidrasi serta meningkatkan elastisitas secara langsung dari dalam.Tranexamic Acid : Membantu meratakan warna kulitProbiotic (Bifida Ferment Lysate) : Meningkatkan kelembaban kulit dan menjaga keseimbangan mikroflora kulitBasahi wajah dengan airTuangkan SCORA D-Panthenol Gentle Low pH Cleanser secukupnya ke telapak tanganBuihkan dan usapkan merata ke seluruh wajah dan leher, menjauhi area mata dan mulutBilas dengan air hingga bersihCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 104,
+      name: "Scora Salicylic Acid Gentle Low pH Cleanser - 100 ml",
+      brand: "Scora",
+      price: 43800,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/11/1/4240c2d2-547a-4570-a758-8f1c339369fa.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "SCORA 1% Salicylic Acid Gentle Low pH Cleanser merupakan pembersih wajah dengan kandungan pH rendah yang membantu membersihkan kulit wajah yang berjerawat sekaligus membantu menutrisi dan melembabkan kulit wajah.No. BPOM : NA18231210316Ukuran: 100mlSalicylic Acid (1%) : Anti-acne mengobati dan merawat jerawat dan membersihkan poriSodium PCA : Menyegarkan, melembutkan dan menjaga keseimbangan pH kulitAllantoin : Mengurangi kemerahan dan peradanganEctoin : Perlindungan dari agresor lingkungan dan sebagai anti-inflamasiUrea : Membantu meningkatkan hidrasi kulit dengan menarik dan mengunci kelembaban kulitMANFAAT :Cocok untuk oily to acne prone skinGentle Deep CleansingMembersihkan kotoran dan minyak berlebih sampai ke poriMerawat dan mengurangi potensi terjadinya jerawat, bruntusan dan komedoMenyegarkan dan menghidrasi kulitMenenangkanpH balanceNon-SLS (minim busa)Cara PENGGUNAAN :Basahi wajah dengan airTuangkan Salicylic Acid Gentle Low pH Cleanser secukupnya ke telapak tangan Buihkan dan usapkan merata ke seluruh wajah dan leher, menjauhi area mata dan mulut Bilas dengan air hingga bersihCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 105,
+      name: "Senka Facial Foam Perfect Whip Collagen In 50 Gr",
+      brand: "Senka",
+      price: 46500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/10/3/81773adc-05c0-4693-95ca-e19533ec50fd.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Perfect Whip Collagen In  merupakan pembersih wajah yang mengandung 90% Beauty Serum dan Collagen yang dapat meningkatkan elastisitas kulit dan memberikan kulit lebih kenyal dan awet muka. Bahan Aqua-In-Pool melindungi dan memperkuat kulit terhadap kerusakan sehari-hari untuk memperkuat fungsi penghalang kulit. Silk Cocoon Essence khas Senka mengunci kelembapan dan ketahanan untuk kulit lembab yang tahan lama.   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 106,
+      name: "Senka Facial Foam Perfect Whip White 50 Gr",
+      brand: "Senka",
+      price: 30000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/9/21/64522256-ed37-41d3-9ec1-2a485eb978cf.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Facial Foam Perfect Whip White 50 Gr Kandungan Fuji Sakura Essence dan Licorice yang ada didalam varian Perfect Whip White berguna untuk mencerahkan kulit dan mencegah produksi melamin pada kulit   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 107,
+      name: "Senka Facial Foam Perfect White Clay 50 gr",
+      brand: "Senka",
+      price: 33000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/6/27/32b5d43e-7552-4dd2-bad7-2d45325a9caf.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Perfect White Clay  memberikan tampilan kulit wajah yang lebih cerah dan lembut. Memancarkan pesona Suppin Look atau tampilan kulit yang cantik alami tanpa makeup! Pembersih wajah ini memiliki kandungan White Cocoon dan Hyaluronic Acid yang membersihkan kulit secara mendalam dan melembabkan kulit. Pembeda dari varian lainnya adalah adanya kandungan White Clay yang mampu mengangkat sel kulit mati dan mencerahkan wajah tanpa membuat kulit wajah menjadi kering.  CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 108,
+      name: "Senka Perfect Facial Foam Series - 100 Gr | 120 Gr",
+      brand: "Senka",
+      price: 74500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/1/22/8c26ada3-1dd8-45ea-9275-4f86f8f44f2c.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Senka Perfect Whip-White Cocoon Essence menciptakan busa yg lembut shg dapat menjaga kelembaban alami kulit wajah-Membersihkan kotoran hingga ke pori-pori wajah, dan melindungi kulit yang halus-Double Hyaluronic Acid u menjaga kulitmu agar tetap lembut danterhidrasi-Dengan aroma bunga yang segarClay-Membersihkan lebih ke dalam sampai pori-pori-Memancarkan pesona Suppin Look (kulit cantik alami tanpa makeup)-White Clay yg mengangkat sel kulit mati & mencerahkan wajah tanpa membuat keringVibrant White-Fuji Sakura Essence & Licorice yg efektif mengontrol produksi melanin pada kulit, memudarkan bintik hitam & mencerahkan kulit wajah-Kulit wajah terlihat lebih cantik dan cerah merona-Untuk jenis kulit normal-kulit sensitive-Mengandung White Cocoon Essence & Double Hyaluronic AcidAnti Shine-Untuk kulit kombinasi-kulit berminyak-Membersihkan debu serta polusi yg menyumbat pori & mengontrol kelebihan sebum pada wajah-Mengandung White Cocoon Essence & Double Hyaluronic Acid-Uji Green Tea yg membersihkan, melembabkan & membuat tampilan kulit tidak mengkilap/matte-Anti oksidan yg tinggi & menyegarkan",
+    },
+    {
+      id: 109,
+      name: "Senka Perfect Whip Berry Bright Facial Foam Series",
+      brand: "Senka",
+      price: 65500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/2/17/432bed84-9667-47dd-88d4-84411a2fae19.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Varian facial foam terbaru dari Senka yang dapat membuat kulit wajahmu tampak cerah merona secara alami. Diformulasikan dengan Mixed Berries (Cranberry & Raspberry) yang kaya antioksidan bisa membuat healthy blush pada wajah dan Japanese Yoshino Cherry Extract yang bisa deep cleansing secara lembut segala sel kulit mati dan kotoran lainnya. Sehingga, kulit wajah menjadi bersih, cerah merona, dan lembap! CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 110,
+      name: "Senka Perfect Whip Fresh 50Gr",
+      brand: "Senka",
+      price: 30000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/13/caa49045-19b2-433b-89d0-458f737f5815.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Perfect Whip - Anti Shine.  Untuk jenis kulit kombinasi hingga kulit berminyak. Mampu membersihkan debu serta polusi yang menyumbat pori dan mengontrol kelebihan sebum pada wajah. Mengandung White cocoon essence  amp; double hyaluronic acid. Diperkaya dengan bahan terbaik dari Jepang yaitu Uji green tea yang membersihkan,melembabkan dan membuat tampilan kulit terlihat tidak mengkilap (matte) lebih lama. senka Perfect Whip - Anti Shine menghasilkan busa berlimpah dengan bahan aktif Uji Green Tea yang dikenal dengan anti oksidan yang tinggi, menyegarkan, menjaga kulit bebas minyak lebih lama dan kulit cantik alami    CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 111,
+      name: "Senka Perfect Whip Halal Beauty Gentle Rose 100g",
+      brand: "Senka",
+      price: 61525,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/8/3/a29770e1-e275-4c9c-a6c5-cda10bda31d9.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Senka Perfect Whip Halal Beauty Gentle Rose merupakan pembersih wajah dengan busa melimpah yang di perkaya dengan Damask Rose Water dan Fuji Sakura Essence. Membantu membersihkan kotoran serta melembapkan kulit pada wajah. Menutrisi kulit dan menampilkan kulit indah selembut kelopak bunga Mawar.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 112,
+      name: "Senka Perfect Whip U 50Gr",
+      brand: "Senka",
+      price: 37720,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/23/c94598e6-7fb3-4bd9-ad57-bb2a39571940.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Shiseido SENKA Perfect Whip adalah pembersih wajah untuk menghilangkan kotoran, minyak berlebih dan sisa make up, dan pada saat bersamaan menghidrasi kulit. Formulanya yang ringan melembabkan dan meregenerasi kulit.  No 1 Facial Foam dari Jepang selama 8 tahun. Berisi kualitas tinggi  #34;White Cocoon Essence #34; langsung menciptakan busa berbulu tebal yang kaya dan tebal yang berfungsi seperti bantal untuk menghilangkan make-up dan kotoran serta sebum berlebih dan  #34;Asam Hyaluronik #34; untuk menjaga kelembaban dan hidrat kulit Anda. Untuk semua jenis kulit.   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 113,
+      name: "Senka Perfect Whip Vitamin C Pores - 100 gr",
+      brand: "Senka",
+      price: 85445,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/6/29/4b40a549-1fb1-453f-9f84-3b5431841a34.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Say bye-bye untuk pori-pori sial – mengencangkan pori-pori dan mencerahkan kulit1. PURIFY: dengan special micro foam mampu menembus 7 lapisan kotoran wajah dengan gentle & memurnikan kotoran. Mampu membersihkan pori-pori tersumbat oleh sebum, keringat, sisa make-up, kulit mati, komedo, dan juga sunscreen. 2. PORELESS: dengan kandungan BHA, mampu mengecilkan pori-pori dan tersamarkan, sehingga kulit lebih lembut, halus dari dekat3. GLOW: dengan ekstrak Japanese yuzu – mampu menutrisi kulit dengan Vitamin C, menjadi lebih sehat dan glowing. Mengandung rahasia Senka dengan Double Hyalurnic Acid dan White Cocoon Essence yang mampu melembabkan kulit dan menutrisi kulitDiformulasikan dengan kandungan “Clean Beauty” – bebas minyak, alkohol, paraben dan penjahat kulitMengangkat 7 lapisan kotoranCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 114,
+      name: "Shantos Facial Wash Oil Acne Solution 100ml",
+      brand: "Shantos",
+      price: 31165,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/8/90553f0d-7f82-472c-9970-9329177f1b48.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Shantos Romeo Facial Wash - Oil Control & Deep CleansingFacial wash yang diperkaya Charcoal efektif membantu mengurangi minyak berlebih serta perlindungan anti bakteri.Dilengkapi Niacinamide serta Glycerin yang dapat mencerahkan waiah sekaligus memberikan efek hidrasi maksimal.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 115,
+      name: "Shantos Romeo Facial Wash Charcoal 100 Ml",
+      brand: "Shantos",
+      price: 31165,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/2/13/a9f022c8-1c8c-4a3d-a089-dd8f2637cc6f.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Shantos Romeo Facial Wash Oil Control & Deep Cleansing Charcoal + Menthol 100ml yang diperkaya Charcoal efektif membantu menguranngi minyak berlebih serta perlindungan anti bakteri. Dilengkapi Niacinamide serta Glycerin yang dapat mencerahkan wajah sekaligus memberikan efek hidrasi maksimal. Rasakan sensasi dingin dari Menthol yang menyegarkan sehingga membuat kulit terlihat lebih segar.Manfaat    Mengontrol minyak pada wajah    Membersihkan pori-pori wajah    Mencerahkan wajah    Melembapkan wajahPemakaian    Tuangkan secukupnya pada telapak tangan.    Usapkan pada wajah hingga berbusa, pijat dengan lembut.    Bilas hingga bersih.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 116,
+      name: "Shinzui Facial Wash 80 Ml",
+      brand: "Shinzui",
+      price: 28564,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/4/20/9859683f-26a1-45c6-9c57-94def26aa9ff.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Shinzui Skin Lightening Facial Wash merupakan pembersih wajah yang mengandung ekstrak Wirch Hazel yaitu bagian alami biji kapas yang mampu membantu mengecilkan pori-pori, kulit wajah nampak cerah, halus, lembut, segar dan berseri. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 117,
+      name: "Skintific Panthenol Gentle Gel Cleanser - 120 ml",
+      brand: "Skintific",
+      price: 106260,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/7/11/33fd886b-2f0e-4967-8d9f-be8119427c94.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Skintific Panthenol Gentle Gel Cleanser 120mlSkintific Panthenol  Gentle Gel Cleanser mengkombinasikan Panthenol dan Amino Acid sehingga membersihkan hingga ke dalam pori-pori dan membantu menghilangkan kotoran, kelebihan minyak dan membantu mencegah pori-pori tersumbat. Membuat kulit terus terhidrasi dan menjadikan kulit lebih lembut dan halus. Manfaat:●Kulit Bersih & Terasa Segar Terhidrasi●Membantu menenangkan kulit●Menyegarkan dan melembabkan kulit Bahan Utama:Panthenol: membantu menenangkan kulit, memberi kelembapan untuk kulit halus dan lembut.   Asam Amino : Memberikan kelembaban pada kulit dan membersihkan dari kotoran tanpa membuat kulit terasa keringCeramide: Asam lemak yang berperan dalam menjaga kelembaban kulit dan menjaga skin barrier.  Cara penggunaan: Aplikasikan pada kulit wajah yang sudah dibersihkan, tepuk dan pijat lembut dengan gerakan memutar. Hindari masuk ke mata. Bilas hingga bersih lalu keringkan. Netto : 120mlCATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 118,
+      name: "Skinti 3X Acid Acne Gel Cleanser - 120 ml",
+      brand: "Skintific",
+      price: 93100,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/11/21/4ccdb1e0-682f-4fd3-8951-185efdcb681b.jpg',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "3X ACID Complex ( Blend of Salicylic Acid, Lactic Acid & Lactobionic Acid)Mengandung gabungan dari salicylic acid, lactic acid dan lactobionic acid yang bekerja secara bersinergi untuk membantu merawat masalah jerawat, exfoliasi dan membersihkan kulit serta mengecilkan tampilan pori-pori pada wajah.Betaine*Humectant agent yang kuat untuk melembabkan serta membantu menjaga skin barrier dan mengurangi kehilangan air pada kulit dan menjaga kelembutan kulit ketika membersihkan wajah.CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 119,
+      name: "Skinti Bundle 5 Items Acne - Gentle Cleansing Mousse [100ml], Pure Centella Acne Calming Toner [80ml], Serum Sunscreen SPF 50 [30ml], 2% Salicylic Acid Anti Acne Serum [50ml], 5% Panthenol Acne Calming Water Gel [45gr]",
+      brand: "Skintific",
+      price: 660400,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/10/7/d25eed85-7fc6-489c-ac8d-cbf149d6d52a.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Isi PaketMoisturizerSerumTonerSunscreenFacial WashCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 120,
+      name: "Skinti Niacinamide Brightening Cleanser - 80ml",
+      brand: "Skintific",
+      price: 106260,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/9/20/343e5f6a-30b8-48e4-8c24-3d5a33ec01ae.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Niacinamide Brightening Cleanser dengan tekstur yang padat namun lembut, dapat membuat busa dengan mudah dan kaya. Diformulasikan dengan Niacinamide, Alpha Arbutin, dan Enzyme, menjadikan kulit tampak lebih cerah dan halus, serta membersihkan secara menyeluruh sekaligus mengontrol produksi minyak berlebih. Enzyme dari Lactobacillus Ferment Lysate, Bromelain dan Papain, mengembalikan kesegaran dan menyehatkan kulit. Diperkaya dengan 5X Ceramide, menjaga kelembaban kulit dan merawat skin barrier. Dikhususkan untuk mencerahkan kulit, menjadikan kulit tampak lebih bersinar dengan daya bersih yang kuatCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 121,
+      name: "Skinti Sensitive Soothe Cleanser - 120 Ml",
+      brand: "Skintific",
+      price: 106260,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/4/4/3880b51c-50ed-4ae5-ba16-d9c77705e73e.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "SKINTIFIC Sensitive Soothe cleanser is specially formulated for sensitive and acne-prone skin. It’s lightweight semi-gel texture creates a soft and gentle foam that cleanses your sensitive skin without causing tightness or dryness, leaving the skin feeling softer and more hydrated. Enriched with a blend of three soothing agents—Bisabolol, Betaine, and Glucoside—it helps soothe redness, provides long-lasting hydration for sensitive skin, enhances comfort, and strengthens the skin barrierSize: 120 mlFunction: 1.Cleanse sensitive skin without causing tightness or dryness2.Soothes sensitive skin conditions such as redness and itching3.Maintains moisture, hydrates the skin, and strengthens the skin barrier4.Supports skin's self-repairHero Ingredients: 1.Bisabolol: Natural anti-oxidant to soothe redness and itchiness on sensitive skin sensitif2.Betaine: Provides long-lasting hydration and strengthens the skin barrier.  3.Glucoside: Hydrates and soothes redness-prone skin.CATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 122,
+      name: "Skintific Amino Acid Gentle Cleansing Mousse 100 Ml",
+      brand: "Skintific",
+      price: 106260,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/9/7e9d2e51-8f2d-4d09-b1b9-d56aaab89a8d.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Skintific Amino Acid Ultra Gentle Cleansing Mousse 100 Ml Face foam ringan dengan amino acid mikro yang dapat membersihkan kotoran dan pori-pori secara mendalam. Kandungan 5 jenis Ceramide, Amino Acid dan White Truffle, menjadikan kulit tetap lembap dan tidak terasa kesat. Menghasilkan foam yang halus dan lembut di wajah dengan kandungan bahan alami yang aman untuk kesehatan skin barrier.Informasi penting!!Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.",
+    },
+    {
+      id: 123,
+      name: "Somethinc Acnedot Treatment Low pH Cleanser 350ml - Sabun Cuci Muka Kulit Berjerawat",
+      brand: "Somethinc",
+      price: 198030,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/b0ac0f89c32d406ba18a777a3aa4a2f7~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Somethinc Acnedot Treatment Low pH CleanserSabun pembersih wajah vegan yang memiliki kemampuan 5X Acne Combat Power untuk membantu membersihkan pori-pori sekaligus mengangkat kotoran, sel kulit mati, residu, & minyak berlebih yang dapat menyebabkan timbulnya jerawat.Manfaat:Membantu membersihkan pori-pori sekaligus mengangkat kotoran, kulit mati, residu & minyak berlebihMembantu melawan jerawatMembantu menjaga kulit tetap lembabCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 124,
+      name: "Somethinc Calm Down Skinpair Bubble Cleanser",
+      brand: "Somethinc",
+      price: 98532,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/2e61bfaecee74f0988b8b3a2394fb8e4~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Somethinc Calm Down Skinpair Bubble CleanserBubble cleanser berformulasi vegan & pH-balanced yang membersihkan debu, sunscreen, makeup & kotoran dari aktivitas sehari-hari tanpa menghilangkan kelembapan esensial, sekaligus menenangkan kemerahan. Dilengkapi paten inovatif Calm Down & 3D Aqua Seal  yang memperkuat skin barrier & menjaga kelembapan dengan minimal gesekan di kulit. Rasakan sensasi busa ringan yang diperkaya oleh Heartleaf, Mugwort & Panthenol untuk menenangkan kemerahan & menutrisi kulit. Cocok untuk pemakaian setiap hari & untuk semua tipe kulit, bahkan kulit paling sensitif.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 125,
+      name: "Somethinc Calm Down Skinpair Bubble Cleanser 120ml",
+      brand: "Somethinc",
+      price: 98231,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/9e0bb5e332bb486d9580588e2f57167c~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " Bubble cleanser berformulasi vegan & pH-balanced yang membersihkan debu, sunscreen, makeup & kotoran dari aktivitas sehari-hari tanpa menghilangkan kelembapan esensial, sekaligus menenangkan kemerahan.Keunggulan:Memperkuat skin barrier & menjaga kelembapan dengan minimal gesekan di kulit.Busa ringan yang menenangkan kemerahan & menutrisi kulit.Cocok untuk pemakaian setiap hari & untuk semua tipe kulit, bahkan kulit paling sensitif.Cleanser ini membersihkan kulit tanpa membuat kering, sehingga kulit menjadi bersih, lembut dan sehat.",
+    },
+    {
+      id: 126,
+      name: "Somethinc Calm Down Skinpair R-Cover - Cream",
+      brand: "Somethinc",
+      price: 124614,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/fc2f12b0032b4bb69fe5c34b92ace90e~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Somethinc Calm Down Skinpair R-CoverPelembap vegan bertekstur ringan yang melindungi barrier kulit dengan menghidrasi secara maksimal sepanjang hari, cocok sebagai moisturizer untuk kulit sensitif. Menghidrasi & menenangkan kulit secara instan dengan CalmDown, Madagascar Centella Asiatica & Encapsulated Ceramide yang meresap hingga ke dalam pori-pori. Somethinc moisturizer ini diperkaya dengan Muru-Muru Butter & Natural Moisture Magnet untuk memperkuat barrier kulit & meningkatkan kelembapan. Penyelamat kulit agar tampak lebih sehat, lembut, kenyal & segar. Ucapkan selamat tinggal pada kulit sensitif & halo untuk skin barrier yang kuat!CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 127,
+      name: "Somethinc Low pH Gentle Jelly Cleanser 350ml",
+      brand: "Somethinc",
+      price: 198030,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/789152c535a141809e859edb7954ccd6~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Low pH Gentle Jelly CleanserPembersih wajah vegan bertekstur jelly dengan kandungan gentle yang dapat menyimbangkan pH kulit tanpa membuat kulit kering, tertarik & merusak barier kulit.Manfaat:Membersihkan debu, kotoran, & minyak berlebih pada kulitMenenangkan kulit kembaliMenjaga kulit lebih cerah dan halusMeminimalisasi terjadinya reaksi sensitisasiMembantu mencegah kondisi akibat mantel asam yang rusak seperti jerawat, eksim, & keriputCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.",
+    },
+    {
+      id: 128,
+      name: "Somethinc Low pH Gentle Jelly Cleanser 380 ml",
+      brand: "Somethinc",
+      price: 198030,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/3/16/f674e4b2-e7a4-4320-a0f7-3e285e4bbe08.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Low pH Gentle Jelly CleanserNON-STRIPPING LOW pH BALANCER GENTLE CLEANSERPembersih wajah berbahan vegan dengan tekstur jelly & gentle, diformulasikan dengan Japanese Mugwort & Tea Tree. Somethinc facial wash ini teruji klinis menyimbangkan pH kulit tanpa membuat kulit kering, tertarik & merusak barier kulit.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 129,
+      name: "Somethinc Low Ph Jelly Cleanser",
+      brand: "Somethinc",
+      price: 85680,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/9/32c4fd04-b0be-4d57-8e04-eb30ee7918c5.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Somethinc Low pH Jelly Cleanser 15mlSomethinc Low pH Jelly Cleanser sabun cuci muka harian yang lembut dan dapat digunakan untuk pagi & malam. Menyeimbangkan pH kulit, membantu menenangkan kulit yang tampak lelah, membersihkan pori-pori hingga kedalam, dan menjaga kelembaban kulit sepanjang hari.Cara Pakai :1. Basuh wajah dengan air.2. Tuangkan cleanser sebesar kacang almond ke telapak tangan.3. Gosok perlahan & baurkan keseluruh wajah dengan gerakan memutar selama 2 menit.4. Bilas dan keringkan, lalu lanjutkan ke step skincare berikutnya.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 130,
+      name: "SOMETHINC Mugwortella Charcoal Deep Pore Cleansing Wash Off Mask",
+      brand: "Somethinc",
+      price: 85974,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/6/70d7e036-c800-413a-9efd-73f8372dec06.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Mugwortella Charcoal Deep Pore Cleansing 10 Minutes Wash Off Mask 60 gr Clay Mask berbahan dasar Bentonite Clay, Kaolin, Bamboo Charcoal bermanfaat untuk membantu membersihkan pori-pori dan menenangkan jerawat. Diinfus dengan Mugwort, Centella Asiatica, Dead Sea Mud, 7 Types of Natural Plants Power & Strawberry Seeds, yang dapat menjadikan masker ini sebagai pertolongan pertama pada kulit. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 131,
+      name: "Somethinc Omega Jelly Deep Cleansing Balm 30 Ml | 100 Ml",
+      brand: "Somethinc",
+      price: 56994,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2025/4/7/0588462c-0d42-49e7-be1a-117e763832f3.jpg',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Omega Jelly Deep Cleansing Balm - 100ml & 30mlJelly cleansing balm dengan formulasi gentle & non-stripping yang efektif menghapus makeup waterproof, sunscreen, kotoran & debu hingga bersih. Dilengkapi dengan Sea Buckthorn yang kaya antioksidan untuk melembapkan & menutrisi kulit. Non-greasy, non-drying, membuat pori-pori kulit bersih namun terjaga kelembapannya.Hypoallergenic CertifiedDermatologically TestedNon-Comedogenic CertifiedUntuk Semua Jenis KulitCATATAN :- Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat. Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti.- Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihhPeraturan komplain :- Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).Lihat Lebih Sedikit",
+    },
+    {
+      id: 132,
+      name: "Tata Papaya Brightening Soap New - 120 gram",
+      brand: "Tata Papaya",
+      price: 12765,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/9/23/b95b1513-8f10-4e2a-9edc-f4b4c1d582b7.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Tata Papaya Brightening Soap 120grKegunaan :> Membersihkan wajah dari debu dan kotoran> Mengandung Papaya Extract dan Sunscreen yang berfungsi untuk memelihara kecerahan kulit wajah> Diperkaya dengan Vitamin A, C, dan E untuk mepertahankan nutrisi kulit> Gunakan secara teratur untuk kulit bersih, cerah, dan terawat. Ingredient :> Cocos Nucifera Oil> Aqua, Carica  > Papaya Fruit Extract > Vitamin A Palmitate.Cara Pakai :Busakan pada telapak tangan, lalu bersihkan wajah/ tubuh, kemudian bilaslah dengan air hingga bersih.\"Untuk perawatan wajah & tubuh\"CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 133,
+      name: "The Originote Ciciamide Facial Cleanser 70gr",
+      brand: "The Originote",
+      price: 41400,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/10c3c47ff4ab40dd8b664537cadc2f80~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " The Originote Cicamide Facial CleanserPembersih wajah yang ringan, dapat membantu membersihkan minyak, bekas makeup, dan sisa debu pada permukaan wajah, dengan kandungan Ceramide dan Niacinamide untuk membantu menjaga skin barrier dan mencerahkan wajah. Diformulasikan dengan ekstrak Centella Asiatica untuk membantu menenangkan wajah, dan sebagai anti inflamasi.MANFAAT:Membersihkan wajah dari debu, minyak dan sisa makeupMenenangkan kulit yang iritasi maupun berjerawatAnti inflamasiMembantu menjaga dan memperbaiki skin barrierMencerahkan wajah",
+    },
+    {
+      id: 134,
+      name: "The Originote Ciciamide Facial Cleanser 70gr",
+      brand: "The Originote",
+      price: 41400,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/10c3c47ff4ab40dd8b664537cadc2f80~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " The Originote Cicamide Facial CleanserPembersih wajah yang ringan, dapat membantu membersihkan minyak, bekas makeup, dan sisa debu pada permukaan wajah, dengan kandungan Ceramide dan Niacinamide untuk membantu menjaga skin barrier dan mencerahkan wajah. Diformulasikan dengan ekstrak Centella Asiatica untuk membantu menenangkan wajah, dan sebagai anti inflamasi.MANFAAT:Membersihkan wajah dari debu, minyak dan sisa makeupMenenangkan kulit yang iritasi maupun berjerawatAnti inflamasiMembantu menjaga dan memperbaiki skin barrierMencerahkan wajah",
+    },
+    {
+      id: 135,
+      name: "The Originote Micellar Foam Cleanser 100ml - Sabun Cuci Muka",
+      brand: "The Originote",
+      price: 48300,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/f2ada76f302942cd934a852564156f02~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "The Originote Micellar Foam CleanserManfaat:Membantu membersihkan wajahMembantu menjaga dan merawat kelembapan kulit wajahMengangkat dan membersihkan minyak berlebihMenyegarkan kulit Dengan kandungan 10X amino acid, 3x ceramide dan 3x superfood blend (kale, blueberry dan raspberry)Cara pakai:Basahkan wajah dan ambil secukupnya pada ujung jari, pijatkan perlahan dan secara rata ke seluruh area wajah. Bilas dengan air. Untuk hasil yang lebih maksimal, gunakan dua kali dalam sehari pada pagi dan malam hari.",
+    },
+    {
+      id: 136,
+      name: "Viva Milk Cleanser & Face Tonic 100 mL Series",
+      brand: "Viva",
+      price: 6670,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/6/3/c85553b8-2ce8-4fea-9310-ed4dcbc0fe46.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Kualitasnya sudah gak perlu diragukan lagi ya , selain harganya terjangkau variantnya banyak sehingga menjawab kebutuhan berbagai jenis kondisi kulit wanita Indonesia.Manfaat dan fungsi bisa dilihat di gambar ya Tersedia ukuran 100mlBengkuangOriginalLemonCucumberGreenteaSprilunaCATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 137,
+      name: "Viva Pelembab Under Make Up Series - Kulit Normal",
+      brand: "Viva",
+      price: 7360,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/11/21/8bb06ab1-09de-46ff-b998-2dce89006581.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Viva Pelembab Under Make Up 30mlLotion pelembab untuk kulit normal/kering.Mengandung :Moisturizer untuk kelembapan kulit.Vitamin E sebagai anti oksidan.Cara Pemakaian :Oleskan Viva Pelembab pada kulit wajah, setelah wajah dalam keadaan bersih.Gunakan setiap hari, terutama pada saat sebelum ber-makeup.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 138,
+      name: "Wardah Acnederm Salicylic Acid Foaming Cleanser 100ml",
+      brand: "Wardah",
+      price: 34293,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/7b1aae9e63d948a68d2dccad2e7392b0~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Wardah Acnederm Pure Foaming Cleanser, pembersih wajah yang diformulasikan untuk bantu atasi masalah kulit berjerawat, mampu membersihkan debu, kotoran, dan minyak berlebih di wajah.Manfaat:Membersihkan wajah dari debu dan kotoranBantu kurangi komedo di wajah.Menenangkan kulit wajah.Menjadikan kulit wajah lembab dan kenyal.Jenis Kulit: Semua Jenis KulitUkuran: 100 mlCara Pemakaian :1. Tuangkan produk secukupnya pada telapak tangan yang bersih.2. Basahi dengan air dan busakan di wajah.3. Pijat lembut dan bilas hingga bersih.",
+    },
+    {
+      id: 139,
+      name: "Wardah Acnederm Series Cleanser | Toner | Day | Night Cream | Serum |Acne Pore Blackhead Balm | Face Powder | Acne Spot Gel berjerawat perawatan",
+      brand: "Wardah",
+      price: 39123,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/ee059108e604495d9638af05082f4e46~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "  Wardah Acnederm Series merupakan serangkaian perawatan yang akan membantu meredakan dan menghilangkan bekas jerawat dan meminimalisir kehadirannya lagi. Cocok untuk kulit berjerawat dan semua jenis kulit (berminyak, kering, sensitif) 1 rangkaian Wardah Acnederm Series terdiri dari:Acnederm Pure Foaming Cleanser (Bersihkan debu, kotoran dan minyak dari kulit wajah)Acnederm Pore Refining Toner (Bantu meringkas pori-pori kulit wajah)Acnederm Pore Blackhead Balm (Bantu kurangi komedo | blackhead)Acnederm Acne Spot Treatment Gel (Perawatan untuk jerawat)Acnederm Day Moisturizer (Menjaga hidrasi dan melindungi kulit dari sinar UV)Acnederm Night Treatment Moisturizer (Membantu menyamarkan noda bekas jerawat & mencerahkan kulit)Acnederm Face Powder (Mencerahkan & mengurangi tampilan kilap di wajah)URUTAN PEMAKAIAN ACNEDERM SERIESPAGIAcnederm Pure Foaming CleanserAcnederm Pore Refining TonerAcnederm Day MoisturizerAcnederm Face PowderMALAMAcnederm Pure Foaming CleanserAcnederm Pore Refining TonerAcnederm Acne Spot Treatment GelAcnederm Night Treatment MoisturizerSEMINGGU 2 KALIAcnederm Pore Blackhead Balm (malam hari sebelum memakai Pure Foaming Cleanser)  ",
+    },
+    {
+      id: 140,
+      name: "Wardah Calm & Soothe Gel Cleanser Heartleaf + 8x NMF Amini 120ml - Cleansing Wajah",
+      brand: "Wardah",
+      price: 87906,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/4c46008e234a456d881706daf4c4211e~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Wardah Amino Gel Cleanser Heartleaf + 8X NMF AminoPembersih wajah lembut dengan Heartleaf Extract dan 8X* NMF Amino yang menenangkan kemerahan dan melembapkan kulit kering tanpa meninggalkan rasa kering ketarik. Manfaat:Membersihkan kulit sambil menjaga pH kulitMelembapkan kulitMeringankan iritasiMenenangkan kemerahan pada kulitMenggunakan formula yang lembut sehingga tidak meninggalkan rasa kering ketarik.Tidak menimbulkan iritasi pada mataFragrance-free & alcohol-free sehingga tidak membuat kulit kering dan iritasi Jenis Kulit: Untuk semua jenis kulit, terutama kulit kering dan sensitifHow to Use: Tuang secukupnya pada telapak tangan dan busakan dengan air. Pijat ke wajah secara lembut dan bilas dengan air",
+    },
+    {
+      id: 141,
+      name: "Wardah Nature Daily Clarifying Facial Foam 100Ml",
+      brand: "Wardah",
+      price: 29946,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/10/11/b2c3ba17-c646-4090-af09-a6978712af10.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Wardah Nature Daily Clarifying Facial Foam Mengandung CarboActiv dan Clarifying Mineral+ yang bersihkan debu, polusi, dan minyak berlebih secara tuntas, yang sesuai dengan kegiatan outdoormu yang terpapar sinar matahari dan poulsi udara CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 142,
+      name: "Wardah Nature Daily Mineral Clarifying Facial Foam 60Ml",
+      brand: "Wardah",
+      price: 18875,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/10/31/ad8a6ce6-b921-4ceb-b904-854fb45b5294.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Nature Daily Mineral+Clarifying Facial Foam merupakan produk facial wash yang mengandung Clarifying Mineral  yaitu perpaduan beberapa mineral yang berasal dari alam dan dikenal membantu menyerap minyak dan kotoran.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 143,
+      name: "Wardah Perfect Bright Cooling Jelly Facial Foam 100ml",
+      brand: "Wardah",
+      price: 31878,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/8dfc4f26380a4444b03ddf29f85c87a7~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Wardah Perfect Bright Cooling Bright Jelly Facial FoamInovasi terbaru dari Wardah, foam pencerah dengan tekstur cooling jelly yang terinspirasi dari segarnya frozen berry smoothie, memberikan sensasi dingin menyegarkan. Kandungan 5 macam vitamin; Vit B3, B5, B6, C dan E, melepaskan nutrisi ke dalam kulit untuk kulit tampak cerah sehat natural.Keunggulan:HypoallergenicDermatologically Tested Non-comedogenic & Non-Acnegenic0% AlkoholFor All Skin TypeCara pakai: Basahi dengan air dan busakan di wajah. Pijat lembut dan bilas hingga bersih. Hindari daerah mata. Untuk hasil optimal, gunakan bersamaan dengan rangkaian Perfect Bright lainnya.",
+    },
+    {
+      id: 144,
+      name: "Wardah Radiant Charge Gel Cleanser Vitamin C + 8X NMF Amino 120ml - Cleansing Wajah",
+      brand: "Wardah",
+      price: 87906,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/aphluv/1997/1/1/e509b2ccec1245c1ad22d07436cf52b3~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Wardah Vitamin C + 8X NMF Amino Radiant Charge Gel CleanserManfaat:Membersihkan dan mencerahkan kulit dengan lembut tanpa iritasiMembuat kulit menjadi lembut dan lembapMencerahkan kulit kusam dan keringMenghidrasi kulit kusamTidak meninggalkan rasa kering ketarik.Alcohol-free sehingga tidak membuat kulit kering dan iritasi Jenis Kulit: Untuk semua jenis kulit, terutama kulit yang dehidrasiHow to Use: Tuang secukupnya pada telapak tangan dan busakan dengan air. Pijat ke wajah secara lembut dan bilas dengan air.",
+    },
+    {
+      id: 145,
+      name: "White Truffle Cleansing Essence Series- 80 ml",
+      brand: "White",
+      price: 106260,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/12/7fa7a0b9-df03-46ae-862b-adb33feff257.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "White Truffle Cleansing Essence 80mlInovasi yang menggabungkan essence dan cleanser dalam satu produk. Cleansing Essence ini berfungsi untuk membersihkan kulit wajah sekaligus merawat skin barrier. Dengan tekstur seperti essence, sangat ringan digunakan untuk kulit sensitif sekalipun. Kandungan White Truffle tingkat tinggi dari Alba, yang kaya akan asam lemak, Peptides dan Vitamin C untuk mendorong kulit lebih kenyal dan sehat. Dilengkapi dengan Amino Acid yang berfungsi sebagai penampung air pada kulit untuk menjaga kelembaban kulit dan menjadikannya lembut dan kencang, serta 5X Ceramide yang menjaga skin barrier tetap sehat. CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 146,
+      name: "Xi Xiu Facial Wash For All Skin Type - 100 Ml",
+      brand: "Xi Xiu",
+      price: 14500,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2022/12/16/30f177d2-d81e-427f-9938-2a49a82de078.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Xi Xiu Facial Wash For All Skin Type Hydrolyzed Algin  amp; Zinc Sulfate untuk membantu wajah terhindar dari timbulnya jerawat tanpa membuat kering serta Niacinamide yang menutrisi kulit tampak lebih cerah alami.   CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.  Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 147,
+      name: "You Acneplus Low Ph Calming Cleanser 100 gr",
+      brand: "You",
+      price: 48645,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/2/8/bc74b52f-5d6d-4269-886b-8c248393f6c1.png',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "You AcnePlus Low pH Calming Cleanser 100 grPembersih wajah yang menenangkan dengan pH rendah mengandung 4D Centella, Herbal Fusion Actives, dan AHA, BHA, & PHA untuk menyeimbangkan kulit, membersihkan kotoran dengan lembut, dan menyegarkan kulit.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 148,
+      name: "You Dazzling Glow Up Facial Foam - 100 gram",
+      brand: "You",
+      price: 29425,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/4/29/6e11186d-ff11-4669-a7c7-54ac2e4013e6.jpg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "You Dazzling Glow Up Facial Foam - 100 gramSabun wajah dengan busa yang lembut, mengandung Rice Extract, Tranexamic Acid, dan Niacinamide untuk menjaga hidrasi kulit dan tetap bercahaya.Rich Foam Cleanser Membersihkan kotoran pada kulit dengan busa yang lembut dan melimpah.Soft & Glowing Skin Kulit terasa lebih lembut dan terlihat bercahaya.Perfect Oil Control Membantu mengontrol sebum berlebih pada wajah.CATATAN : - Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.- Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. - Pemesanan Instant Day Dan Regular yg masuk setelah jam yg 15.00 akan dikirim di keesokan harinya.- Khusus Hari Sabtu Pesanan yang Di Proses Cuman Yang Masuk Sebelum Jam 14:00 dan akan kembali di proses di di keesokan harinya.- Hari Raya Islam Dan Tahun Baru tidak ada pengiriman. Terima kasihh Peraturan komplain : - Waktu membuka paket harap direkam. Komplain wajib lampirkan video & foto label pemesanan, jika tidak ada video & foto, komplain tidak akan diproses(video harus real tanpa ada editing).",
+    },
+    {
+      id: 149,
+      name: "You Golden Age Deep Cleansing Facia wash",
+      brand: "You",
+      price: 43000,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2024/1/23/ac1bdcf6-c3c2-4d58-be90-8345b2a6c7d4.png',
+      isNew: true,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Golden Age Deep Cleansing Facial Wash diformulasikan dengan ekstrak Buah Delima dan Lactic Acid yang mampu membersihkan sisa makeup dan pori-pori secara mendalam sehingga kulit terasa lebih lembut dan kenyal.1.Removes MakeupMembersihkan makeup dalam satu langkah.2.Deep CleansingDengan lembut membersihkan kotoran dan debu penyebab penuaan hingga lapisan kulit terdalam.3.HydratingMembantu meningkatkan kadar air pada kulit untuk mencegah dehidrasi dan tanda-tanda penuaan.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+    {
+      id: 150,
+      name: "YOU Hy Amino Facial Wash - Pencuci Muka Series 100gr",
+      brand: "You",
+      price: 34730,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/o3syd0/1997/1/1/7cc7db20a283425a94e6291d830eaf8a~.jpeg',
+      isNew: false,
+      isBestseller: false,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: " YOU Beauty meluncurkan produk facial wash Hy! Amino Facial Wash dengan beberapa varian.Pembersih wajah tersebut diklaim mengandung 5D hyaluronic acid dan amino acid yang tak hanya membersihkan kulit secara menyeluruh, tetapi juga sekaligus melembapkan. Anti Acne: Busa sedikit, mencegah jerawat, tidak membuat kulit kering, mencegah iritasi dan komedoBrightening: Gentle foaming, menjaga hidrasi kulit, mencegah kulit kusam, untuk smua jenis kulitAnti Bacterial: Mengurangi sebum, tidak membuat kering, mencegah bakteriHydrating: Minim iritasi, mencerahkan kulit, mengembalikan kelembapan kulitOli control: Mengontrol minyak berlibih diwajah",
+    },
+    {
+      id: 151,
+      name: "You Hy! Amino Facial Wash Series Acne | Brightening | Bacteri | Hydra",
+      brand: "You",
+      price: 30200,
+      originalPrice: 0,
+      rating: 4.7,
+      reviews: 789,
+      image: 'https://images.tokopedia.net/img/cache/200-square/VqbcmM/2023/1/20/dff6fe9e-98d4-4b1b-9ec4-7ccba9bd64e8.jpg',
+      isNew: false,
+      isBestseller: true,
+      category: 'skincare',
+      subCategory: 'cleanser',
+      subSubCategory: 'face-wash',
+      description: "Selling Point: Mengandung 5 jenis Hyaluronic Acid yang membantu menghidrasi kulit.•Diperkaya dengan 4 jenis Asam Amino untuk membantu menjaga kelembapan kulit.Varian:Hy! Amino Contr-oil Oil Control Facial WashMengandung Salicylic Acid, Glycolic Acid, dan Volcanic Soil untuk membantu membersihkan pori-pori, mengeksfoliasi kulit dengan lembut, dan membersihkan minyak berlebih.- Hy! Amino Glo-Win Brightening Facial Wash -Mengandung Niacinamide, Vitamin C, ekstrak bunga Camellia, dan Citric Acid untuk mencegah radikal bebas dan mengangkat sel kulit mati.- Hy! Amino AC-Ttack Anti-Acne Facial Wash -Mengandung Salicylic Acid, ekstrak Centella Asiatica, dan Tea Tree Oil untuk membantu mengurangi minyak berlebih, membersihkan kotoran, dan mengurangi jerawat.- Hy! Amino Wow-Tery Hydrating Facial Wash -Mengandung Aloe Vera, Seaweed, dan ekstrak madu yang membantu melembapkan dan menutrisi kulit.CATATAN : Tidak menerima PERUBAHAN alamat dan pesanan melalui catatan dan chat.  Jika ingin KOMPLAIN barang kurang/rusak WAJIB menyertakan video unboxing untuk proses lebih lanjut.Sebelum check out harap konfirmasi ketersediaan barang terlebih dahulu karena barang kita jual di toko secara offline juga ya kak harap dimengerti. Terimakasihh",
+    },
+  ]
+};
+
+
+
+
+
+
+export default function BeautyEcommerce() {
+  const [currentBanner, setCurrentBanner] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [cart, setCart] = useState<any[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState<'promo' | 'category'>('promo');
+
+  // Flatten all products
+  const allProducts = useMemo(() => {
+    return [...initialProducts.makeup, ...initialProducts.skincare];
+  }, []);
+
+  // Filter products with category-centric approach
+  const filteredProducts = useMemo(() => {
+    let products = allProducts;
+
+    if (selectedCategory) {
+      products = products.filter(p => p.category === selectedCategory);
+    }
+
+    if (selectedSubCategory) {
+      products = products.filter(p => p.subCategory === selectedSubCategory);
+    }
+
+    if (selectedSubSubCategory) {
+      products = products.filter(p => p.subSubCategory === selectedSubSubCategory);
+    }
+
+    if (searchQuery) {
+      products = products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    return products;
+  }, [allProducts, selectedCategory, selectedSubCategory, selectedSubSubCategory, searchQuery]);
+
+  // Get current category data
+  const currentCategoryData = useMemo(() => {
+    if (!selectedCategory) return null;
+    return initialCategories.find(cat => cat.id === selectedCategory);
+  }, [selectedCategory]);
+
+  // Reset sub-categories when main category changes
+  React.useEffect(() => {
+    setSelectedSubCategory(null);
+    setSelectedSubSubCategory(null);
+  }, [selectedCategory]);
+
+  // Cart functions
+  const addToCart = (product: any) => {
+    const existing = cart.find(item => item.id === product.id);
+    if (existing) {
+      setCart(cart.map(item =>
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      ));
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
+  };
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCart(cart.map(item =>
+      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+    ).filter(item => item.quantity > 0));
+  };
+
+  const removeFromCart = (id: number) => {
+    setCart(cart.filter(item => item.id !== id));
+  };
+
+  const toggleFavorite = (id: number) => {
+    setFavorites(prev =>
+      prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
+    );
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Banner auto-rotate
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % initialBanners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white border-b-2 border-rose-700 shadow-md">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setShowMenu(!showMenu)}
+              >
+                {showMenu ? <X /> : <Menu />}
+              </Button>
+              <div 
+                className="cursor-pointer"
+                onClick={() => {
+                  setCurrentPage('promo');
+                  setSelectedCategory(null);
+                  setSelectedSubCategory(null);
+                  setSelectedSubSubCategory(null);
+                }}
+              >
+                <h1 className="text-xl md:text-2xl font-bold text-rose-700">
+                  CITRA COSMETIC
+                </h1>
+                <p className="text-xs text-rose-600 font-medium">MAKASSAR</p>
+              </div>
+            </div>
+
+            <div className="hidden md:flex flex-1 max-w-md">
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant={currentPage === 'promo' ? 'default' : 'outline'}
+                className={`hidden md:flex ${currentPage === 'promo' ? 'bg-rose-700 hover:bg-rose-800 text-white' : 'text-rose-700 border-rose-700 hover:bg-rose-50'}`}
+                onClick={() => {
+                  setCurrentPage('promo');
+                  setSelectedCategory(null);
+                  setSelectedSubCategory(null);
+                  setSelectedSubSubCategory(null);
+                }}
+              >
+                Promo & Deals
+              </Button>
+              <Button
+                variant={currentPage === 'category' ? 'default' : 'outline'}
+                className={`hidden md:flex ${currentPage === 'category' ? 'bg-rose-700 hover:bg-rose-800 text-white' : 'text-rose-700 border-rose-700 hover:bg-rose-50'}`}
+                onClick={() => setCurrentPage('category')}
+              >
+                Shop by Category
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative border-rose-700 text-rose-700 hover:bg-rose-50"
+                onClick={() => setShowCart(true)}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-rose-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile Search */}
+          <div className="md:hidden mt-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search products..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {showMenu && (
+          <div className="lg:hidden border-t bg-background">
+            <div className="container mx-auto px-4 py-4 space-y-2">
+              <Button
+                variant={currentPage === 'promo' ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={() => {
+                  setCurrentPage('promo');
+                  setSelectedCategory(null);
+                  setShowMenu(false);
+                }}
+              >
+                Promo & Deals
+              </Button>
+              <Button
+                variant={currentPage === 'category' ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={() => {
+                  setCurrentPage('category');
+                  setShowMenu(false);
+                }}
+              >
+                Shop by Category
+              </Button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      
+
+      {/* HOME PAGE 1: PROMO & DEALS */}
+      {currentPage === 'promo' && (
+        <>
+          {/* Banner Carousel */}
+          <div className="relative h-64 md:h-96 overflow-hidden">
+            <img
+              src={initialBanners[currentBanner]}
+              alt="Promotional banner showcasing beauty products with vibrant colors and elegant styling"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {initialBanners.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`h-2 rounded-full transition-all ${
+                    idx === currentBanner ? 'w-8 bg-white' : 'w-2 bg-white/50'
+                  }`}
+                  onClick={() => setCurrentBanner(idx)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Category Access */}
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Shop by Category</h2>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage('category')}
+              >
+                View All Categories
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {initialCategories.slice(0, 6).map(cat => (
+                <Card
+                  key={cat.id}
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => {
+                    setCurrentPage('category');
+                    setSelectedCategory(cat.id);
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <img
+                      src={cat.image}
+                      alt={`Category image showing ${cat.name} products with elegant presentation`}
+                      className="w-full h-32 object-cover rounded-lg mb-3"
+                    />
+                    <h3 className="font-semibold text-center text-sm">
+                      <span className="mr-2">{cat.icon}</span>
+                      {cat.name}
+                    </h3>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Best Deals Section */}
+          <div className="container mx-auto px-4 py-8 bg-gradient-to-br from-rose-50 via-rose-100 to-red-50 -mx-4 px-4">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-rose-800 mb-2">Best Deals Today</h2>
+              <p className="text-rose-600">Penawaran Terbaik Khusus Hari Ini!</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {allProducts.filter(p => p.originalPrice).slice(0, 4).map(product => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-2xl transition-all hover:scale-105 border-2 border-transparent hover:border-rose-300">
+                  <div className="relative">
+                    <img
+                      src={product.image}
+                      alt={`Product image of ${product.name} by ${product.brand} showing elegant beauty product packaging`}
+                      className="w-full h-48 object-cover cursor-pointer"
+                      onClick={() => setSelectedProduct(product)}
+                    />
+                    <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded font-bold">
+                      {Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-white/90 hover:bg-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          favorites.includes(product.id) ? 'fill-rose-700 text-rose-700' : ''
+                        }`}
+                      />
+                    </Button>
+                  </div>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">{product.brand}</p>
+                    <h3
+                      className="font-semibold mb-2 line-clamp-2 cursor-pointer hover:text-rose-700"
+                      onClick={() => setSelectedProduct(product)}
+                    >
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center gap-1 mb-2">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">{product.rating}</span>
+                    </div>
+                    <div className="flex flex-col gap-1 mb-3">
+                      <span className="text-lg font-bold text-rose-700">
+                        Rp {product.price.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground line-through">
+                        Rp {product.originalPrice.toLocaleString()}
+                      </span>
+                    </div>
+                    <Button className="w-full bg-rose-700 hover:bg-rose-800 shadow-md hover:shadow-lg transition-all" onClick={() => addToCart(product)}>
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Tambah ke Keranjang
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* New Arrivals */}
+          <div className="container mx-auto px-4 py-8">
+            <h2 className="text-2xl font-bold mb-6">New Arrivals</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {allProducts.filter(p => p.isNew).slice(0, 4).map(product => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-shadow">
+                  <div className="relative">
+                    <img
+                      src={product.image}
+                      alt={`Product image of ${product.name} by ${product.brand} showing elegant beauty product packaging`}
+                      className="w-full h-48 object-cover cursor-pointer"
+                      onClick={() => setSelectedProduct(product)}
+                    />
+                    <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                      NEW
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-white/90 hover:bg-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          favorites.includes(product.id) ? 'fill-rose-700 text-rose-700' : ''
+                        }`}
+                      />
+                    </Button>
+                  </div>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">{product.brand}</p>
+                    <h3
+                      className="font-semibold mb-2 line-clamp-2 cursor-pointer hover:text-rose-700"
+                      onClick={() => setSelectedProduct(product)}
+                    >
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center gap-1 mb-2">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">{product.rating}</span>
+                    </div>
+                    <div className="flex flex-col gap-1 mb-3">
+                      <span className="text-lg font-bold text-rose-700">
+                        Rp {product.price.toLocaleString()}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-muted-foreground line-through">
+                          Rp {product.originalPrice.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <Button className="w-full bg-rose-700 hover:bg-rose-800" onClick={() => addToCart(product)}>
+                      Add to Cart
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Bestsellers */}
+          <div className="container mx-auto px-4 py-8 bg-muted/50 -mx-4 px-4">
+            <h2 className="text-2xl font-bold mb-6">Bestsellers</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {allProducts.filter(p => p.isBestseller).slice(0, 4).map(product => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-shadow">
+                  <div className="relative">
+                    <img
+                      src={product.image}
+                      alt={`Product image of ${product.name} by ${product.brand} showing elegant beauty product packaging`}
+                      className="w-full h-48 object-cover cursor-pointer"
+                      onClick={() => setSelectedProduct(product)}
+                    />
+                    <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                      BESTSELLER
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 bg-white/90 hover:bg-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(product.id);
+                      }}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          favorites.includes(product.id) ? 'fill-rose-700 text-rose-700' : ''
+                        }`}
+                      />
+                    </Button>
+                  </div>
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">{product.brand}</p>
+                    <h3
+                      className="font-semibold mb-2 line-clamp-2 cursor-pointer hover:text-rose-700"
+                      onClick={() => setSelectedProduct(product)}
+                    >
+                      {product.name}
+                    </h3>
+                    <div className="flex items-center gap-1 mb-2">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">{product.rating}</span>
+                      <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                    </div>
+                    <div className="flex flex-col gap-1 mb-3">
+                      <span className="text-lg font-bold text-rose-700">
+                        Rp {product.price.toLocaleString()}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-xs text-muted-foreground line-through">
+                          Rp {product.originalPrice.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <Button className="w-full bg-rose-700 hover:bg-rose-800" onClick={() => addToCart(product)}>
+                      Add to Cart
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* HOME PAGE 2: CATEGORY CENTRIC BROWSING */}
+      {currentPage === 'category' && (
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex gap-6">
+            {/* LEFT SIDEBAR - Category Navigation */}
+            <aside className="hidden lg:block w-64 flex-shrink-0">
+              <Card className="sticky top-20 border-2 border-rose-200 shadow-lg">
+                <CardContent className="p-4">
+                  <div className="bg-gradient-to-r from-rose-700 to-rose-900 text-white p-3 -m-4 mb-4 rounded-t-lg">
+                    <h2 className="font-bold text-lg">Kategori Produk</h2>
+                    <p className="text-xs text-rose-100">Pilih kategori favorit Anda</p>
+                  </div>
+                  
+                  {/* Main Categories */}
+                  <div className="space-y-1">
+                    <Button
+                      variant={!selectedCategory ? "default" : "ghost"}
+                      className={`w-full justify-start text-sm ${!selectedCategory ? 'bg-rose-700 hover:bg-rose-800 text-white' : 'hover:bg-rose-50'}`}
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setSelectedSubCategory(null);
+                        setSelectedSubSubCategory(null);
+                      }}
+                    >
+                      Semua Produk
+                    </Button>
+                    
+                    {initialCategories.map(cat => (
+                      <div key={cat.id}>
+                        <Button
+                          variant={selectedCategory === cat.id ? "default" : "ghost"}
+                          className={`w-full justify-start text-sm transition-all ${selectedCategory === cat.id ? 'bg-rose-700 hover:bg-rose-800 text-white shadow-md' : 'hover:bg-rose-50 hover:text-rose-700'}`}
+                          onClick={() => {
+                            setSelectedCategory(cat.id);
+                            if (selectedCategory === cat.id) {
+                              setSelectedCategory(null);
+                              setSelectedSubCategory(null);
+                              setSelectedSubSubCategory(null);
+                            }
+                          }}
+                        >
+                          <span className="mr-2">{cat.icon}</span>
+                          {cat.name}
+                          <ChevronRight className={`ml-auto h-4 w-4 transition-transform ${selectedCategory === cat.id ? 'rotate-90' : ''}`} />
+                        </Button>
+                        
+                        {/* Sub Categories */}
+                        {selectedCategory === cat.id && (
+                          <div className="ml-4 mt-1 space-y-1 border-l-2 border-muted pl-2">
+                            <Button
+                              variant={!selectedSubCategory ? "secondary" : "ghost"}
+                              size="sm"
+                              className={`w-full justify-start text-xs ${!selectedSubCategory ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'hover:bg-rose-50'}`}
+                              onClick={() => {
+                                setSelectedSubCategory(null);
+                                setSelectedSubSubCategory(null);
+                              }}
+                            >
+                              Semua {cat.name}
+                            </Button>
+                            {cat.subCategories.map(subCat => (
+                              <div key={subCat.id}>
+                                <Button
+                                  variant={selectedSubCategory === subCat.id ? "secondary" : "ghost"}
+                                  size="sm"
+                                  className={`w-full justify-start text-xs ${selectedSubCategory === subCat.id ? 'bg-rose-100 text-rose-700 font-semibold hover:bg-rose-200' : 'hover:bg-rose-50'}`}
+                                  onClick={() => {
+                                    setSelectedSubCategory(subCat.id);
+                                    if (selectedSubCategory === subCat.id) {
+                                      setSelectedSubCategory(null);
+                                      setSelectedSubSubCategory(null);
+                                    }
+                                  }}
+                                >
+                                  {subCat.name}
+                                  {subCat.subSubCategories.length > 0 && (
+                                    <ChevronRight className={`ml-auto h-3 w-3 transition-transform ${selectedSubCategory === subCat.id ? 'rotate-90' : ''}`} />
+                                  )}
+                                </Button>
+                                
+                                {/* Sub-Sub Categories */}
+                                {selectedSubCategory === subCat.id && subCat.subSubCategories.length > 0 && (
+                                  <div className="ml-3 mt-1 space-y-1 border-l-2 border-muted pl-2">
+                                    <Button
+                                      variant={!selectedSubSubCategory ? "outline" : "ghost"}
+                                      size="sm"
+                                      className={`w-full justify-start text-xs ${!selectedSubSubCategory ? 'border-rose-700 text-rose-700 bg-rose-50 font-medium' : 'hover:bg-rose-50'}`}
+                                      onClick={() => setSelectedSubSubCategory(null)}
+                                    >
+                                      Semua
+                                    </Button>
+                                    {subCat.subSubCategories.map(subSubCat => (
+                                      <Button
+                                        key={subSubCat.id}
+                                        variant={selectedSubSubCategory === subSubCat.id ? "outline" : "ghost"}
+                                        size="sm"
+                                        className={`w-full justify-start text-xs ${selectedSubSubCategory === subSubCat.id ? 'border-rose-700 text-rose-700 bg-rose-50 font-semibold' : 'hover:bg-rose-50'}`}
+                                        onClick={() => setSelectedSubSubCategory(subSubCat.id)}
+                                      >
+                                        {subSubCat.name}
+                                      </Button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </aside>
+
+            {/* MAIN CONTENT AREA */}
+            <div className="flex-1">
+              {/* Mobile Category Selector */}
+              <div className="lg:hidden mb-4">
+                <Card className="border-2 border-rose-200 shadow-md">
+                  <CardContent className="p-3">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between border-rose-700 text-rose-700 hover:bg-rose-50"
+                      onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Menu className="h-4 w-4" />
+                        {selectedSubSubCategory
+                          ? currentCategoryData?.subCategories
+                              .find(s => s.id === selectedSubCategory)
+                              ?.subSubCategories.find(ss => ss.id === selectedSubSubCategory)?.name
+                          : selectedSubCategory
+                          ? currentCategoryData?.subCategories.find(s => s.id === selectedSubCategory)?.name
+                          : selectedCategory
+                          ? currentCategoryData?.name
+                          : 'All Categories'}
+                      </span>
+                      <ChevronRight className={`h-4 w-4 transition-transform ${showCategoryMenu ? 'rotate-90' : ''}`} />
+                    </Button>
+                  </CardContent>
+                </Card>
+                
+                {/* Mobile Category Menu */}
+                {showCategoryMenu && (
+                  <Card className="mt-2">
+                    <CardContent className="p-3 max-h-96 overflow-y-auto">
+                      <div className="space-y-1">
+                        <Button
+                          variant={!selectedCategory ? "default" : "ghost"}
+                          size="sm"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setSelectedCategory(null);
+                            setSelectedSubCategory(null);
+                            setSelectedSubSubCategory(null);
+                            setShowCategoryMenu(false);
+                          }}
+                        >
+                          All Products
+                        </Button>
+                        {initialCategories.map(cat => (
+                          <div key={cat.id}>
+                            <Button
+                              variant={selectedCategory === cat.id ? "default" : "ghost"}
+                              size="sm"
+                              className="w-full justify-start"
+                              onClick={() => setSelectedCategory(cat.id)}
+                            >
+                              <span className="mr-2">{cat.icon}</span>
+                              {cat.name}
+                            </Button>
+                            {selectedCategory === cat.id && (
+                              <div className="ml-4 space-y-1 mt-1">
+                                {cat.subCategories.map(subCat => (
+                                  <div key={subCat.id}>
+                                    <Button
+                                      variant={selectedSubCategory === subCat.id ? "secondary" : "ghost"}
+                                      size="sm"
+                                      className="w-full justify-start text-xs"
+                                      onClick={() => setSelectedSubCategory(subCat.id)}
+                                    >
+                                      {subCat.name}
+                                    </Button>
+                                    {selectedSubCategory === subCat.id && subCat.subSubCategories.length > 0 && (
+                                      <div className="ml-3 space-y-1 mt-1">
+                                        {subCat.subSubCategories.map(subSubCat => (
+                                          <Button
+                                            key={subSubCat.id}
+                                            variant={selectedSubSubCategory === subSubCat.id ? "outline" : "ghost"}
+                                            size="sm"
+                                            className="w-full justify-start text-xs"
+                                            onClick={() => {
+                                              setSelectedSubSubCategory(subSubCat.id);
+                                              setShowCategoryMenu(false);
+                                            }}
+                                          >
+                                            {subSubCat.name}
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Breadcrumb Navigation */}
+              {(selectedCategory || selectedSubCategory || selectedSubSubCategory) && (
+                <div className="bg-rose-50 p-3 rounded-lg mb-4 border-l-4 border-rose-700">
+                  <div className="flex items-center gap-2 text-sm flex-wrap">
+                    <button
+                      className="text-rose-700 hover:underline font-medium"
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setSelectedSubCategory(null);
+                        setSelectedSubSubCategory(null);
+                      }}
+                    >
+                      Semua Kategori
+                    </button>
+                  {selectedCategory && (
+                    <>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <button
+                        className="text-rose-700 hover:underline font-medium"
+                        onClick={() => {
+                          setSelectedSubCategory(null);
+                          setSelectedSubSubCategory(null);
+                        }}
+                      >
+                        {currentCategoryData?.name}
+                      </button>
+                    </>
+                  )}
+                  {selectedSubCategory && (
+                    <>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <button
+                        className="text-rose-700 hover:underline font-medium"
+                        onClick={() => setSelectedSubSubCategory(null)}
+                      >
+                        {currentCategoryData?.subCategories.find(s => s.id === selectedSubCategory)?.name}
+                      </button>
+                    </>
+                  )}
+                  {selectedSubSubCategory && (
+                    <>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-rose-900 font-bold">
+                        {currentCategoryData?.subCategories
+                          .find(s => s.id === selectedSubCategory)
+                          ?.subSubCategories.find(ss => ss.id === selectedSubSubCategory)?.name}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              )}
+
+              {/* All Categories Grid - Show when no category selected */}
+              {!selectedCategory && (
+                <div>
+                  <div className="bg-gradient-to-r from-rose-700 to-rose-900 text-white p-6 rounded-lg mb-6 shadow-lg">
+                    <h2 className="text-3xl font-bold mb-2">Jelajahi Kategori</h2>
+                    <p className="text-rose-100">Temukan produk kecantikan pilihan Anda</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                    {initialCategories.map(cat => (
+                      <Card
+                        key={cat.id}
+                        className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 hover:border-rose-700 border-2 border-transparent"
+                        onClick={() => setSelectedCategory(cat.id)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="relative overflow-hidden rounded-lg mb-3 group">
+                            <img
+                              src={cat.image}
+                              alt={`Category image showing ${cat.name} products with elegant presentation`}
+                              className="w-full h-32 object-cover transition-transform group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-rose-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          <h3 className="font-bold text-center text-rose-800">
+                            <span className="mr-2 text-xl">{cat.icon}</span>
+                            {cat.name}
+                          </h3>
+                          <p className="text-xs text-rose-600 text-center mt-1 font-medium">
+                            {cat.subCategories.length} subkategori
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Products Grid */}
+              {selectedCategory && (
+                <div>
+                  <div className="bg-gradient-to-r from-rose-700 to-rose-900 text-white p-6 rounded-lg mb-6 shadow-lg">
+                    <div>
+                      <h2 className="text-3xl font-bold mb-2">
+                        {selectedSubSubCategory
+                          ? currentCategoryData?.subCategories
+                              .find(s => s.id === selectedSubCategory)
+                              ?.subSubCategories.find(ss => ss.id === selectedSubSubCategory)?.name
+                          : selectedSubCategory
+                          ? currentCategoryData?.subCategories.find(s => s.id === selectedSubCategory)?.name
+                          : currentCategoryData?.name}
+                      </h2>
+                      <p className="text-rose-100">
+                        Menampilkan {filteredProducts.length} produk
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                {filteredProducts.map(product => (
+              <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="relative">
+                  <img
+                    src={product.image}
+                    alt={`Product image of ${product.name} by ${product.brand} showing elegant beauty product packaging`}
+                    className="w-full h-48 object-cover cursor-pointer"
+                    onClick={() => setSelectedProduct(product)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 bg-white/90 hover:bg-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(product.id);
+                    }}
+                  >
+                    <Heart
+                        className={`h-5 w-5 ${
+                          favorites.includes(product.id) ? 'fill-rose-700 text-rose-700' : ''
+                        }`}
+                      />
+                  </Button>
+                  {product.isNew && (
+                    <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                      NEW
+                    </span>
+                  )}
+                  {product.isBestseller && (
+                    <span className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                      BESTSELLER
+                    </span>
+                  )}
+                </div>
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground mb-1">{product.brand}</p>
+                  <h3
+                    className="font-semibold mb-2 line-clamp-2 cursor-pointer hover:text-rose-700"
+                    onClick={() => setSelectedProduct(product)}
+                  >
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center gap-1 mb-2">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium">{product.rating}</span>
+                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
+                  </div>
+                  <div className="flex flex-col gap-1 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-rose-700">
+                        Rp {product.price.toLocaleString()}
+                      </span>
+                    </div>
+                    {product.originalPrice && (
+                      <span className="text-xs text-muted-foreground line-through">
+                        Rp {product.originalPrice.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    className="w-full bg-rose-700 hover:bg-rose-800"
+                    onClick={() => addToCart(product)}
+                  >
+                    Add to Cart
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+              </div>
+
+                  {filteredProducts.length === 0 && (
+                    <div className="text-center py-12 bg-rose-50 rounded-lg border-2 border-rose-200">
+                      <div className="text-6xl mb-4">🔍</div>
+                      <p className="text-rose-800 font-semibold text-lg mb-2">Produk tidak ditemukan</p>
+                      <p className="text-rose-600 mb-4">Tidak ada produk dalam kategori ini</p>
+                      <Button
+                        className="mt-4 bg-rose-700 hover:bg-rose-800"
+                        onClick={() => {
+                          setSelectedCategory(null);
+                          setSelectedSubCategory(null);
+                          setSelectedSubSubCategory(null);
+                        }}
+                      >
+                        Jelajahi Semua Kategori
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedProduct(null)}>
+          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <CardContent className="p-0">
+              <div className="relative">
+                <img
+                  src={selectedProduct.image}
+                  alt={`Detailed product image of ${selectedProduct.name} by ${selectedProduct.brand} with high quality presentation`}
+                  className="w-full h-64 md:h-96 object-cover"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 right-4 bg-white/90"
+                  onClick={() => setSelectedProduct(null)}
+                >
+                  <X />
+                </Button>
+              </div>
+              <div className="p-6">
+                <p className="text-sm text-muted-foreground mb-2">{selectedProduct.brand}</p>
+                <h2 className="text-2xl font-bold mb-4">{selectedProduct.name}</h2>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{selectedProduct.rating}</span>
+                  </div>
+                  <span className="text-muted-foreground">({selectedProduct.reviews} reviews)</span>
+                </div>
+                <p className="text-muted-foreground mb-6">{selectedProduct.description}</p>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {selectedProduct.tags.map((tag: string) => (
+                    <span key={tag} className="bg-muted px-3 py-1 rounded-full text-sm">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div>
+                    <span className="text-3xl font-bold text-rose-700">
+                      Rp {selectedProduct.price.toLocaleString()}
+                    </span>
+                    {selectedProduct.originalPrice && (
+                      <span className="text-lg text-muted-foreground line-through ml-3">
+                        Rp {selectedProduct.originalPrice.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  className="w-full bg-rose-700 hover:bg-rose-800"
+                  size="lg"
+                  onClick={() => {
+                    addToCart(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
+                >
+                  Add to Cart
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Shopping Cart Sidebar */}
+      {showCart && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end" onClick={() => setShowCart(false)}>
+          <div
+            className="bg-white w-full max-w-md h-full overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-rose-700">
+                <div>
+                  <h2 className="text-2xl font-bold text-rose-800">Keranjang Belanja</h2>
+                  <p className="text-sm text-rose-600">{cartCount} item</p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setShowCart(false)}>
+                  <X />
+                </Button>
+              </div>
+
+              {cart.length === 0 ? (
+                <div className="text-center py-12 bg-rose-50 rounded-lg">
+                  <ShoppingCart className="h-16 w-16 mx-auto text-rose-300 mb-4" />
+                  <p className="text-rose-800 font-semibold text-lg mb-2">Keranjang Kosong</p>
+                  <p className="text-rose-600 text-sm">Mulai belanja sekarang!</p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-4 mb-6">
+                    {cart.map(item => (
+                      <Card key={item.id}>
+                        <CardContent className="p-4">
+                          <div className="flex gap-4">
+                            <img
+                              src={item.image}
+                              alt={`Cart item image of ${item.name} by ${item.brand}`}
+                              className="w-20 h-20 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <h3 className="font-semibold line-clamp-1">{item.name}</h3>
+                              <p className="text-sm text-muted-foreground">{item.brand}</p>
+                              <p className="text-rose-700 font-bold mt-1">
+                                Rp {item.price.toLocaleString()}
+                              </p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => updateQuantity(item.id, -1)}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-8 text-center">{item.quantity}</span>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => updateQuantity(item.id, 1)}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 ml-auto"
+                                  onClick={() => removeFromCart(item.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <div className="border-t-2 border-rose-200 pt-4 space-y-3 bg-rose-50 -mx-6 px-6 py-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold text-rose-800">Total Belanja:</span>
+                      <span className="text-2xl font-bold text-rose-700">Rp {cartTotal.toLocaleString()}</span>
+                    </div>
+                    <Button className="w-full bg-rose-700 hover:bg-rose-800 shadow-lg hover:shadow-xl transition-all text-lg py-6" size="lg">
+                      Checkout Sekarang
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    </Button>
+                    <p className="text-xs text-center text-rose-600">Gratis ongkir untuk pembelian di atas Rp 200.000</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-r from-rose-800 to-rose-900 mt-12 py-8 text-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-4">
+            <h3 className="text-2xl font-bold mb-2">CITRA COSMETIC MAKASSAR</h3>
+            <p className="text-rose-100">Pusat Kecantikan Terpercaya di Makassar</p>
+          </div>
+          <div className="border-t border-rose-700 pt-4 text-center text-rose-200 text-sm">
+            <p>&copy; 2024 Citra Cosmetic Makassar. Hak Cipta Dilindungi.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
